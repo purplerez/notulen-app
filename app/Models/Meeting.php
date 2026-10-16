@@ -87,6 +87,8 @@ class Meeting extends Model
 
     /**
      * The attendees registered for the meeting.
+     *
+     * @return HasMany<Attendee, $this>
      */
     public function attendees(): HasMany
     {

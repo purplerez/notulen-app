@@ -20,13 +20,27 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <a
+                    href="{{ route('meetings.attendance.host', $meeting) }}"
+                    class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 active:scale-[0.98] transition"
+                >
+                    📱 Layar QR Absensi
+                </a>
+
+                <a
+                    href="{{ route('meetings.attendance.recap', $meeting) }}"
+                    class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
+                >
+                    📊 Rekap
+                </a>
+
                 @can('update', $meeting)
                     <a
                         href="{{ route('meetings.edit', $meeting) }}"
-                        class="inline-flex min-h-[40px] items-center rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
+                        class="inline-flex min-h-[40px] items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
                     >
-                        ✏️ Ubah Room
+                        ✏️ Ubah
                     </a>
                 @endcan
 
@@ -62,14 +76,26 @@
         <!-- Card: Status & Metadata Room -->
         <div class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Status Room</span>
-                <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider
-                    @if($meeting->status === 'draft') bg-slate-100 text-slate-700
-                    @elseif($meeting->status === 'recording') bg-rose-50 text-rose-700 ring-1 ring-rose-600/20 animate-pulse
-                    @elseif($meeting->status === 'ready') bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20
-                    @else bg-blue-50 text-blue-700 @endif">
-                    {{ $meeting->status }}
-                </span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Status Room & Absensi</span>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider
+                        @if($meeting->status === 'draft') bg-slate-100 text-slate-700
+                        @elseif($meeting->status === 'recording') bg-rose-50 text-rose-700 ring-1 ring-rose-600/20 animate-pulse
+                        @elseif($meeting->status === 'ready') bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20
+                        @else bg-blue-50 text-blue-700 @endif">
+                        {{ $meeting->status }}
+                    </span>
+
+                    @if($meeting->absensi_closed_at)
+                        <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-xs font-bold text-rose-700 ring-1 ring-rose-600/20">
+                            Absensi Ditutup
+                        </span>
+                    @else
+                        <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-600/20">
+                            Absensi Terbuka
+                        </span>
+                    @endif
+                </div>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
@@ -78,12 +104,12 @@
                     <span class="font-semibold text-slate-800 capitalize">{{ $meeting->style }}</span>
                 </div>
                 <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
-                    <span class="text-slate-400 block">Kop Surat</span>
-                    <span class="font-semibold text-slate-800">{{ $meeting->use_kop ? 'Aktif' : 'Nonaktif' }}</span>
+                    <span class="text-slate-400 block">Batas Terlambat</span>
+                    <span class="font-semibold text-slate-800">+{{ $meeting->late_after_minutes }} Menit</span>
                 </div>
                 <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
-                    <span class="text-slate-400 block">Tindak Lanjut</span>
-                    <span class="font-semibold text-slate-800">{{ $meeting->use_followup ? 'Aktif' : 'Nonaktif' }}</span>
+                    <span class="text-slate-400 block">Kop & Tindak Lanjut</span>
+                    <span class="font-semibold text-slate-800">{{ $meeting->use_kop ? 'Kop Aktif' : 'Tanpa Kop' }} • {{ $meeting->use_followup ? 'Tindak Lanjut' : 'Ringkas' }}</span>
                 </div>
                 <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
                     <span class="text-slate-400 block">Pembuat Room</span>
@@ -91,9 +117,15 @@
                 </div>
             </div>
 
+            @if($meeting->show_recorded_notice)
+                <div class="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 border border-amber-200/80 font-medium">
+                    🎙️ Label resmi: <em>"Rapat direkam untuk notulensi"</em> aktif pada dokumen rapat.
+                </div>
+            @endif
+
             @if($meeting->signatories->isNotEmpty())
                 <div class="pt-2">
-                    <span class="text-xs font-semibold text-slate-500 block mb-1.5">Penandatangan:</span>
+                    <span class="text-xs font-semibold text-slate-500 block mb-1.5">Penandatangan Dokumen:</span>
                     <div class="flex flex-wrap gap-2">
                         @foreach($meeting->signatories as $sig)
                             <span class="inline-flex items-center rounded-lg bg-indigo-50/80 px-2.5 py-1 text-xs font-medium text-indigo-700">
@@ -103,14 +135,43 @@
                     </div>
                 </div>
             @endif
+
+            <!-- Close Attendance Control for Host -->
+            @can('update', $meeting)
+                @if(!$meeting->absensi_closed_at)
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div class="text-xs text-slate-500">
+                            Sesi absensi masih terbuka. Tutup sesi untuk menetapkan status peserta yang belum hadir.
+                        </div>
+                        <form method="POST" action="{{ route('meetings.attendance.close', $meeting) }}" onsubmit="return confirm('Tutup absensi rapat ini sekarang? Peserta yang belum hadir akan otomatis diberi status Tanpa Keterangan.')">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="inline-flex min-h-[38px] items-center rounded-xl bg-slate-800 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-slate-700 shadow-2xs"
+                            >
+                                🔒 Tutup Sesi Absensi
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                        <span>Absensi resmi ditutup pada {{ \Carbon\Carbon::parse($meeting->absensi_closed_at)->translatedFormat('d M Y, H:i') }} WIB.</span>
+                        <a href="{{ route('meetings.attendance.recap', $meeting) }}" class="font-bold text-indigo-600 hover:text-indigo-800">
+                            Koreksi Kehadiran di Rekap →
+                        </a>
+                    </div>
+                @endif
+            @endcan
         </div>
 
         <!-- Section: Peserta Rapat & Kelola Peserta -->
         <div class="space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-900">Peserta Rapat</h2>
-                    <p class="text-xs text-slate-500">Total {{ $meeting->attendees->count() }} orang terdaftar</p>
+                    <h2 class="text-lg font-bold text-slate-900">Peserta & Presensi</h2>
+                    <p class="text-xs text-slate-500">
+                        {{ $meeting->attendees->whereNotNull('status')->count() }} hadir dari {{ $meeting->attendees->count() }} orang
+                    </p>
                 </div>
             </div>
 
@@ -171,7 +232,7 @@
                             </form>
                         @else
                             <p class="text-xs text-slate-500 py-2">
-                                Belum ada buku kontak organisasi. Silakan gunakan tab <strong>Peserta Baru</strong> untuk menambahkan peserta dan menyimpannya secara otomatis.
+                                Belum ada buku kontak organisasi. Gunakan tab <strong>Peserta Baru</strong> untuk menambahkan peserta (otomatis tersimpan ke buku kontak).
                             </p>
                         @endif
                     </div>
@@ -216,7 +277,7 @@
                                     class="block w-full min-h-[44px] rounded-xl border border-slate-300 bg-white text-slate-900 px-3 py-2 text-sm shadow-2xs focus:ring-2 focus:ring-indigo-600"
                                 />
                                 <p class="text-[11px] text-slate-500">
-                                    Format nomor (08..., +628..., 8...) akan dinormalisasi ke format E.164 (628...) dan kontak otomatis tersimpan ke buku kontak organisasi.
+                                    Nomor akan dinormalisasi ke format E.164 (628...) dan kontak otomatis tersimpan ke buku kontak organisasi.
                                 </p>
                             </div>
 
@@ -237,45 +298,89 @@
             <div class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs">
                 <ul role="list" class="divide-y divide-slate-100">
                     @forelse($meeting->attendees as $attendee)
-                        <li class="flex items-center justify-between p-4 sm:px-5">
-                            <div class="min-w-0 pr-3">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold text-sm text-slate-900 truncate">{{ $attendee->name }}</span>
-                                    @if($attendee->is_guest)
-                                        <span class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Tamu</span>
-                                    @endif
+                        <li class="p-4 sm:px-5 space-y-2">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0 pr-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-slate-900 truncate">{{ $attendee->name }}</span>
+                                        @if($attendee->is_guest)
+                                            <span class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                                                Tamu {{ $attendee->guest_status ? '(' . $attendee->guest_status . ')' : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-xs text-slate-500 truncate mt-0.5">
+                                        {{ $attendee->position ?? 'Peserta' }} • +{{ $attendee->phone_e164 }}
+                                    </p>
                                 </div>
-                                <p class="text-xs text-slate-500 truncate mt-0.5">
-                                    {{ $attendee->position ?? 'Peserta' }} • +{{ $attendee->phone_e164 }}
-                                </p>
+
+                                <div class="flex items-center gap-2 shrink-0">
+                                    @if($attendee->status)
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold capitalize
+                                            @if($attendee->status === 'hadir') bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20
+                                            @elseif($attendee->status === 'terlambat') bg-amber-50 text-amber-700 ring-1 ring-amber-600/20
+                                            @else bg-slate-100 text-slate-700 @endif">
+                                            {{ str_replace('_', ' ', $attendee->status) }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-slate-400 font-medium">Belum Absen</span>
+                                    @endif
+
+                                    @can('delete', $attendee)
+                                        <form method="POST" action="{{ route('meetings.attendees.destroy', [$meeting, $attendee]) }}" onsubmit="return confirm('Hapus peserta {{ $attendee->name }} dari rapat ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button
+                                                type="submit"
+                                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                                                title="Hapus peserta"
+                                            >
+                                                ✕
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </div>
                             </div>
 
-                            <div class="flex items-center gap-3 shrink-0">
-                                @if($attendee->status)
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold capitalize
-                                        @if($attendee->status === 'hadir') bg-emerald-50 text-emerald-700
-                                        @elseif($attendee->status === 'terlambat') bg-amber-50 text-amber-700
-                                        @else bg-slate-100 text-slate-700 @endif">
-                                        {{ str_replace('_', ' ', $attendee->status) }}
-                                    </span>
-                                @else
-                                    <span class="text-xs text-slate-400">Belum Absen</span>
-                                @endif
+                            <!-- Host Quick Actions (Manual Mark & Guest Approval) -->
+                            @can('manageAttendees', $meeting)
+                                <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-50 text-xs">
+                                    <div class="text-[11px] text-slate-400">
+                                        @if($attendee->checked_in_at)
+                                            Waktu presensi: {{ \Carbon\Carbon::parse($attendee->checked_in_at)->translatedFormat('H:i') }} ({{ strtoupper($attendee->method ?? 'QR') }})
+                                        @endif
+                                    </div>
 
-                                @can('delete', $attendee)
-                                    <form method="POST" action="{{ route('meetings.attendees.destroy', [$meeting, $attendee]) }}" onsubmit="return confirm('Hapus peserta {{ $attendee->name }} dari rapat ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                                            title="Hapus peserta"
-                                        >
-                                            ✕
-                                        </button>
-                                    </form>
-                                @endcan
-                            </div>
+                                    <div class="flex items-center gap-2">
+                                        <!-- Guest Approval Buttons -->
+                                        @if($attendee->is_guest && $attendee->guest_status === 'pending')
+                                            <form method="POST" action="{{ route('meetings.attendance.approve_guest', [$meeting, $attendee]) }}">
+                                                @csrf
+                                                <button type="submit" class="rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700">
+                                                    ✓ Setujui Tamu
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('meetings.attendance.reject_guest', [$meeting, $attendee]) }}">
+                                                @csrf
+                                                <button type="submit" class="rounded-lg bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-300">
+                                                    Tolak
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <!-- Manual Check-in for attendees without phone -->
+                                        @if(!$attendee->status)
+                                            <form method="POST" action="{{ route('meetings.attendance.manual', [$meeting, $attendee]) }}" class="inline-flex items-center gap-1.5">
+                                                @csrf
+                                                <input type="hidden" name="status" value="hadir" />
+                                                <button type="submit" class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                                                    ✓ Tandai Hadir Manual
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
                         </li>
                     @empty
                         <li class="p-6 text-center text-xs text-slate-500">

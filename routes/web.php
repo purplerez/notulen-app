@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MeetingAttendeeController;
 use App\Http\Controllers\MeetingController;
@@ -11,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Public check-in route for participants (/c/{meeting}?code=...)
+Route::get('/c/{meeting}', [CheckinController::class, 'show'])->name('checkin.show');
+Route::post('/c/{meeting}', [CheckinController::class, 'store'])->name('checkin.store');
 
 // Guest routes
 Route::middleware('guest')->group(function () {
@@ -39,4 +45,14 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/meetings/{meeting}/attendees', [MeetingAttendeeController::class, 'store'])->name('meetings.attendees.store');
     Route::delete('/meetings/{meeting}/attendees/{attendee}', [MeetingAttendeeController::class, 'destroy'])->name('meetings.attendees.destroy');
+
+    // Attendance host screen, live QR polling, manual attendance, closing, and recap
+    Route::get('/meetings/{meeting}/attendance', [AttendanceController::class, 'hostScreen'])->name('meetings.attendance.host');
+    Route::get('/meetings/{meeting}/attendance/qr-data', [AttendanceController::class, 'qrData'])->name('meetings.attendance.qr_data');
+    Route::post('/meetings/{meeting}/attendees/{attendee}/manual', [AttendanceController::class, 'manualCheckin'])->name('meetings.attendance.manual');
+    Route::post('/meetings/{meeting}/attendees/{attendee}/approve-guest', [AttendanceController::class, 'approveGuest'])->name('meetings.attendance.approve_guest');
+    Route::post('/meetings/{meeting}/attendees/{attendee}/reject-guest', [AttendanceController::class, 'rejectGuest'])->name('meetings.attendance.reject_guest');
+    Route::post('/meetings/{meeting}/close-attendance', [AttendanceController::class, 'closeAttendance'])->name('meetings.attendance.close');
+    Route::put('/meetings/{meeting}/attendees/{attendee}/status', [AttendanceController::class, 'updateStatus'])->name('meetings.attendance.update_status');
+    Route::get('/meetings/{meeting}/recap', [AttendanceController::class, 'recap'])->name('meetings.attendance.recap');
 });
