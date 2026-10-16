@@ -63,17 +63,21 @@
                     </a>
                 @endcan
 
-                <div class="flex items-center justify-between rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-4">
+                <a
+                    href="{{ route('meetings.index') }}"
+                    class="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-2xs hover:border-indigo-300 hover:bg-slate-50/60 transition"
+                >
                     <div class="flex items-center gap-3">
-                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-500 font-bold">
+                        <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 font-bold">
                             📝
                         </span>
                         <div>
-                            <h3 class="font-semibold text-slate-700 text-sm">Daftar Rapat</h3>
-                            <p class="text-xs text-slate-400">Fitur sedang dalam pengembangan</p>
+                            <h3 class="font-semibold text-slate-900 text-sm">Daftar Rapat</h3>
+                            <p class="text-xs text-slate-500">Kelola room rapat, absensi & notulen</p>
                         </div>
                     </div>
-                </div>
+                    <span class="text-slate-400 text-sm">→</span>
+                </a>
             </div>
         </div>
     </div>

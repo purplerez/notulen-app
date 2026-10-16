@@ -1,0 +1,289 @@
+<x-layouts.app :title="$meeting->title . ' - ' . config('app.name', 'Notulensi Rapat')">
+    <div class="space-y-6">
+        <!-- Top Navigation & Room Actions -->
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <a href="{{ route('meetings.index') }}" class="text-xs font-medium text-indigo-600 hover:text-indigo-800">
+                    ← Kembali ke Daftar Rapat
+                </a>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl mt-1">
+                    {{ $meeting->title }}
+                </h1>
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 mt-1">
+                    <span>📅 {{ \Carbon\Carbon::parse($meeting->meeting_date)->translatedFormat('l, d F Y') }}</span>
+                    @if($meeting->start_time)
+                        <span>⏰ {{ substr($meeting->start_time, 0, 5) }} WIB</span>
+                    @endif
+                    @if($meeting->location)
+                        <span>📍 {{ $meeting->location }}</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                @can('update', $meeting)
+                    <a
+                        href="{{ route('meetings.edit', $meeting) }}"
+                        class="inline-flex min-h-[40px] items-center rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
+                    >
+                        ✏️ Ubah Room
+                    </a>
+                @endcan
+
+                @can('delete', $meeting)
+                    <form method="POST" action="{{ route('meetings.destroy', $meeting) }}" onsubmit="return confirm('Hapus room rapat ini? Seluruh data peserta terkait akan dihapus.')">
+                        @csrf
+                        @method('DELETE')
+                        <button
+                            type="submit"
+                            class="inline-flex min-h-[40px] items-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                        >
+                            Hapus
+                        </button>
+                    </form>
+                @endcan
+            </div>
+        </div>
+
+        @if (session('success'))
+            <div class="rounded-xl bg-emerald-50 p-4 border border-emerald-200 text-sm text-emerald-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="rounded-xl bg-rose-50 p-4 border border-rose-200 text-sm text-rose-800 space-y-1">
+                @foreach ($errors->all() as $error)
+                    <p>⚠️ {{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
+        <!-- Card: Status & Metadata Room -->
+        <div class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Status Room</span>
+                <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider
+                    @if($meeting->status === 'draft') bg-slate-100 text-slate-700
+                    @elseif($meeting->status === 'recording') bg-rose-50 text-rose-700 ring-1 ring-rose-600/20 animate-pulse
+                    @elseif($meeting->status === 'ready') bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20
+                    @else bg-blue-50 text-blue-700 @endif">
+                    {{ $meeting->status }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                    <span class="text-slate-400 block">Gaya Notulen</span>
+                    <span class="font-semibold text-slate-800 capitalize">{{ $meeting->style }}</span>
+                </div>
+                <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                    <span class="text-slate-400 block">Kop Surat</span>
+                    <span class="font-semibold text-slate-800">{{ $meeting->use_kop ? 'Aktif' : 'Nonaktif' }}</span>
+                </div>
+                <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                    <span class="text-slate-400 block">Tindak Lanjut</span>
+                    <span class="font-semibold text-slate-800">{{ $meeting->use_followup ? 'Aktif' : 'Nonaktif' }}</span>
+                </div>
+                <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                    <span class="text-slate-400 block">Pembuat Room</span>
+                    <span class="font-semibold text-slate-800 truncate block">{{ $meeting->creator?->name ?? '-' }}</span>
+                </div>
+            </div>
+
+            @if($meeting->signatories->isNotEmpty())
+                <div class="pt-2">
+                    <span class="text-xs font-semibold text-slate-500 block mb-1.5">Penandatangan:</span>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($meeting->signatories as $sig)
+                            <span class="inline-flex items-center rounded-lg bg-indigo-50/80 px-2.5 py-1 text-xs font-medium text-indigo-700">
+                                ✍️ {{ $sig->name }} ({{ $sig->role_label }})
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <!-- Section: Peserta Rapat & Kelola Peserta -->
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Peserta Rapat</h2>
+                    <p class="text-xs text-slate-500">Total {{ $meeting->attendees->count() }} orang terdaftar</p>
+                </div>
+            </div>
+
+            @can('manageAttendees', $meeting)
+                <!-- Form Tambah Peserta (Accordion / Tab Alpine.js) -->
+                <div x-data="{ tab: 'contact' }" class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Tambah Peserta Rapat</span>
+
+                        <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-medium">
+                            <button
+                                type="button"
+                                @click="tab = 'contact'"
+                                :class="tab === 'contact' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-900'"
+                                class="rounded-md px-2.5 py-1 transition"
+                            >
+                                Dari Kontak
+                            </button>
+                            <button
+                                type="button"
+                                @click="tab = 'new'"
+                                :class="tab === 'new' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'text-slate-500 hover:text-slate-900'"
+                                class="rounded-md px-2.5 py-1 transition"
+                            >
+                                Peserta Baru
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab 1: Pilih dari Kontak Organisasi -->
+                    <div x-show="tab === 'contact'" class="space-y-3">
+                        @if($contacts->isNotEmpty())
+                            <form method="POST" action="{{ route('meetings.attendees.store', $meeting) }}" class="space-y-3">
+                                @csrf
+                                <div class="space-y-1.5">
+                                    <label for="contact_id" class="block text-xs font-medium text-slate-700">Pilih Kontak Organisasi</label>
+                                    <select
+                                        id="contact_id"
+                                        name="contact_id"
+                                        required
+                                        class="block w-full min-h-[46px] rounded-xl border border-slate-300 bg-white text-slate-900 px-3.5 py-2.5 text-sm shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                                    >
+                                        <option value="">-- Pilih salah satu kontak --</option>
+                                        @foreach($contacts as $contact)
+                                            <option value="{{ $contact->id }}">
+                                                {{ $contact->name }} @if($contact->position) ({{ $contact->position }}) @endif • {{ $contact->phone_e164 }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="inline-flex min-h-[44px] items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700"
+                                >
+                                    + Tambah ke Daftar Hadir
+                                </button>
+                            </form>
+                        @else
+                            <p class="text-xs text-slate-500 py-2">
+                                Belum ada buku kontak organisasi. Silakan gunakan tab <strong>Peserta Baru</strong> untuk menambahkan peserta dan menyimpannya secara otomatis.
+                            </p>
+                        @endif
+                    </div>
+
+                    <!-- Tab 2: Tambah Peserta Baru (Otomatis Simpan Kontak) -->
+                    <div x-show="tab === 'new'" class="space-y-3" style="display: none;">
+                        <form method="POST" action="{{ route('meetings.attendees.store', $meeting) }}" class="space-y-3">
+                            @csrf
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="space-y-1.5">
+                                    <label for="new_name" class="block text-xs font-medium text-slate-700">Nama Lengkap <span class="text-rose-500">*</span></label>
+                                    <input
+                                        type="text"
+                                        id="new_name"
+                                        name="name"
+                                        required
+                                        placeholder="Contoh: Dra. Sri Wahyuni"
+                                        class="block w-full min-h-[44px] rounded-xl border border-slate-300 bg-white text-slate-900 px-3 py-2 text-sm shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                                    />
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <label for="new_position" class="block text-xs font-medium text-slate-700">Jabatan / Instansi</label>
+                                    <input
+                                        type="text"
+                                        id="new_position"
+                                        name="position"
+                                        placeholder="Contoh: Guru Produktif / Komite"
+                                        class="block w-full min-h-[44px] rounded-xl border border-slate-300 bg-white text-slate-900 px-3 py-2 text-sm shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label for="new_phone" class="block text-xs font-medium text-slate-700">Nomor Telepon / WhatsApp <span class="text-rose-500">*</span></label>
+                                <input
+                                    type="text"
+                                    id="new_phone"
+                                    name="phone"
+                                    required
+                                    placeholder="Contoh: 081234567890 atau +6281234567890"
+                                    class="block w-full min-h-[44px] rounded-xl border border-slate-300 bg-white text-slate-900 px-3 py-2 text-sm shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                                />
+                                <p class="text-[11px] text-slate-500">
+                                    Format nomor (08..., +628..., 8...) akan dinormalisasi ke format E.164 (628...) dan kontak otomatis tersimpan ke buku kontak organisasi.
+                                </p>
+                            </div>
+
+                            <div class="pt-1">
+                                <button
+                                    type="submit"
+                                    class="inline-flex min-h-[44px] items-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 active:scale-[0.98] transition"
+                                >
+                                    + Tambah Peserta & Simpan Kontak
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endcan
+
+            <!-- Daftar Peserta Terdaftar -->
+            <div class="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs">
+                <ul role="list" class="divide-y divide-slate-100">
+                    @forelse($meeting->attendees as $attendee)
+                        <li class="flex items-center justify-between p-4 sm:px-5">
+                            <div class="min-w-0 pr-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm text-slate-900 truncate">{{ $attendee->name }}</span>
+                                    @if($attendee->is_guest)
+                                        <span class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">Tamu</span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-slate-500 truncate mt-0.5">
+                                    {{ $attendee->position ?? 'Peserta' }} • +{{ $attendee->phone_e164 }}
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-3 shrink-0">
+                                @if($attendee->status)
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold capitalize
+                                        @if($attendee->status === 'hadir') bg-emerald-50 text-emerald-700
+                                        @elseif($attendee->status === 'terlambat') bg-amber-50 text-amber-700
+                                        @else bg-slate-100 text-slate-700 @endif">
+                                        {{ str_replace('_', ' ', $attendee->status) }}
+                                    </span>
+                                @else
+                                    <span class="text-xs text-slate-400">Belum Absen</span>
+                                @endif
+
+                                @can('delete', $attendee)
+                                    <form method="POST" action="{{ route('meetings.attendees.destroy', [$meeting, $attendee]) }}" onsubmit="return confirm('Hapus peserta {{ $attendee->name }} dari rapat ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                                            title="Hapus peserta"
+                                        >
+                                            ✕
+                                        </button>
+                                    </form>
+                                @endcan
+                            </div>
+                        </li>
+                    @empty
+                        <li class="p-6 text-center text-xs text-slate-500">
+                            Belum ada peserta yang ditambahkan ke room rapat ini.
+                        </li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+    </div>
+</x-layouts.app>

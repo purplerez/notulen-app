@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Organization;
+use App\Models\OrganizationSignatory;
+use App\Models\OrgContact;
 use App\Models\SuperAdmin;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -67,7 +69,54 @@ class DatabaseSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // 3. Super Admin Platform (Guard Platform Terpisah)
+        // 3. Penandatangan Organisasi
+        OrganizationSignatory::withoutGlobalScopes()->create([
+            'organization_id' => $org->id,
+            'name' => 'Drs. H. Mulyadi, M.Pd.',
+            'position' => 'Kepala Sekolah',
+            'role_label' => 'Mengetahui',
+            'sort' => 1,
+        ]);
+
+        OrganizationSignatory::withoutGlobalScopes()->create([
+            'organization_id' => $org->id,
+            'name' => 'Budi Santoso, S.Pd.',
+            'position' => 'Waka Kurikulum',
+            'role_label' => 'Ketua Rapat',
+            'sort' => 2,
+        ]);
+
+        OrganizationSignatory::withoutGlobalScopes()->create([
+            'organization_id' => $org->id,
+            'name' => 'Notulis Satu',
+            'position' => 'Staf Tata Usaha',
+            'role_label' => 'Notulis',
+            'sort' => 3,
+        ]);
+
+        // 4. Buku Kontak Organisasi
+        OrgContact::withoutGlobalScopes()->create([
+            'organization_id' => $org->id,
+            'name' => 'Budi Santoso, S.Pd.',
+            'position' => 'Waka Kurikulum',
+            'phone_e164' => '6281234567801',
+        ]);
+
+        OrgContact::withoutGlobalScopes()->create([
+            'organization_id' => $org->id,
+            'name' => 'Siti Aminah, M.Pd.',
+            'position' => 'Waka Kesiswaan',
+            'phone_e164' => '6281234567802',
+        ]);
+
+        OrgContact::withoutGlobalScopes()->create([
+            'organization_id' => $org->id,
+            'name' => 'Ir. Hendro Kusumo',
+            'position' => 'Ketua Komite Sekolah',
+            'phone_e164' => '6281234567803',
+        ]);
+
+        // 5. Super Admin Platform (Guard Platform Terpisah)
         SuperAdmin::create([
             'name' => 'Super Admin Platform',
             'email' => 'admin@platform.test',

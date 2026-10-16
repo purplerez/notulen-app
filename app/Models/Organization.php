@@ -71,4 +71,28 @@ class Organization extends Model
     {
         return $this->hasMany(AuditLog::class);
     }
+
+    /**
+     * Get the contacts for this organization.
+     */
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(OrgContact::class);
+    }
+
+    /**
+     * Get the signatories for this organization.
+     */
+    public function signatories(): HasMany
+    {
+        return $this->hasMany(OrganizationSignatory::class);
+    }
+
+    /**
+     * Get the meetings for this organization.
+     */
+    public function meetings(): HasMany
+    {
+        return $this->hasMany(Meeting::class);
+    }
 }
