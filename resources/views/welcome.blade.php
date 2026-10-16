@@ -17,6 +17,24 @@
             <p class="mt-2 text-sm leading-relaxed text-slate-600">
                 Perekaman rapat tatap muka mobile-first, transkripsi otomatis, dan penyusunan notulen terstruktur untuk lembaga dan sekolah.
             </p>
+
+            <div class="mt-6">
+                @auth
+                    <a
+                        href="{{ route('dashboard') }}"
+                        class="flex w-full min-h-[48px] items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
+                    >
+                        Buka Dashboard
+                    </a>
+                @else
+                    <a
+                        href="{{ route('login') }}"
+                        class="flex w-full min-h-[48px] items-center justify-center rounded-xl bg-indigo-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 transition"
+                    >
+                        Masuk ke Akun
+                    </a>
+                @endauth
+            </div>
         </div>
 
         <!-- Alpine.js Demonstration & Large Touch-Friendly Buttons -->
@@ -30,15 +48,6 @@
             </div>
 
             <div class="mt-5 space-y-3">
-                <!-- Large button for mobile tap target -->
-                <button
-                    type="button"
-                    @click="count++"
-                    class="flex w-full min-h-[48px] items-center justify-center rounded-xl bg-indigo-600 px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-500 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer"
-                >
-                    <span x-text="'Tombol Aksi Mobile (Klik: ' + count + ')'"></span>
-                </button>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div class="rounded-xl bg-slate-50 p-3.5 text-center border border-slate-100">
                         <span class="block text-xs text-slate-500">Database</span>
