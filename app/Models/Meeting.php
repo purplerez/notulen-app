@@ -161,4 +161,13 @@ class Meeting extends Model
     {
         return $this->hasMany(UsageLog::class);
     }
+
+    /**
+     * Determine whether the meeting minutes are finalized.
+     * When minutes feature is developed (sections 8.4-8.5), check finalized minute versions.
+     */
+    public function isMinutesFinal(): bool
+    {
+        return false;
+    }
 }

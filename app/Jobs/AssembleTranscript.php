@@ -46,5 +46,8 @@ class AssembleTranscript implements ShouldQueue
             'expected_segments' => $this->meeting->expected_segments,
             'transcript_segments_count' => $this->meeting->transcriptSegments()->count(),
         ]);
+
+        // Dispatch audio merging job
+        MergeAudio::dispatch($this->meeting);
     }
 }

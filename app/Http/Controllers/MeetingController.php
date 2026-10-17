@@ -8,6 +8,8 @@ use App\Models\OrgContact;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
 class MeetingController extends Controller
@@ -125,9 +127,23 @@ class MeetingController extends Controller
         $meeting->load(['creator', 'signatories', 'attendees.contact']);
         $contacts = OrgContact::query()->orderBy('name')->get();
 
+        $user = auth()->user();
+        $canViewAudio = $user && Gate::allows('viewAudio', $meeting);
+        $audioStreamUrl = null;
+
+        if ($canViewAudio && $meeting->merged_audio_path) {
+            $audioStreamUrl = URL::temporarySignedRoute(
+                'meetings.audio.stream',
+                now()->addMinutes(30),
+                ['meeting' => $meeting->id]
+            );
+        }
+
         return view('meetings.show', [
             'meeting' => $meeting,
             'contacts' => $contacts,
+            'canViewAudio' => $canViewAudio,
+            'audioStreamUrl' => $audioStreamUrl,
         ]);
     }
 

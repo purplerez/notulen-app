@@ -20,11 +20,12 @@ class AttendanceCheckinTest extends TestCase
         $org = Organization::factory()->create();
         $notulis = User::factory()->notulis()->create(['organization_id' => $org->id]);
 
+        $futureTime = now()->addHour();
         $meeting = Meeting::factory()->create([
             'organization_id' => $org->id,
             'created_by' => $notulis->id,
-            'meeting_date' => now()->format('Y-m-d'),
-            'start_time' => now()->addHour()->format('H:i'), // In the future, not late
+            'meeting_date' => $futureTime->format('Y-m-d'),
+            'start_time' => $futureTime->format('H:i'), // In the future, not late
         ]);
 
         $attendee = Attendee::factory()->create([
@@ -67,11 +68,12 @@ class AttendanceCheckinTest extends TestCase
         $org = Organization::factory()->create();
         $notulis = User::factory()->notulis()->create(['organization_id' => $org->id]);
 
+        $futureTime = now()->addHour();
         $meeting = Meeting::factory()->create([
             'organization_id' => $org->id,
             'created_by' => $notulis->id,
-            'meeting_date' => now()->format('Y-m-d'),
-            'start_time' => now()->addHour()->format('H:i'),
+            'meeting_date' => $futureTime->format('Y-m-d'),
+            'start_time' => $futureTime->format('H:i'),
         ]);
 
         $attendee1 = Attendee::factory()->create([

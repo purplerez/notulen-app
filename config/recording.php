@@ -54,4 +54,13 @@ return [
         'audio/ogg',
         'audio/opus',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | FFMPEG Configuration
+    |--------------------------------------------------------------------------
+    | Path to ffmpeg binary and audio transcoding bitrate for merged files.
+    */
+    'ffmpeg_path' => env('FFMPEG_PATH', 'ffmpeg'),
+    'merge_bitrate' => env('AUDIO_MERGE_BITRATE', '128k'),
 ];

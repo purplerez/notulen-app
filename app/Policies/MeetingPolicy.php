@@ -107,4 +107,22 @@ class MeetingPolicy
 
         return $user->isNotulis() && $meeting->created_by === $user->id;
     }
+
+    /**
+     * Determine whether the user can play raw audio of the meeting.
+     * Enforced by RawMaterialPolicy.
+     */
+    public function viewAudio(mixed $user, Meeting $meeting): bool
+    {
+        return app(RawMaterialPolicy::class)->viewAudio($user, $meeting);
+    }
+
+    /**
+     * Determine whether the user can view the raw transcript of the meeting.
+     * Enforced by RawMaterialPolicy.
+     */
+    public function viewTranscript(mixed $user, Meeting $meeting): bool
+    {
+        return app(RawMaterialPolicy::class)->viewTranscript($user, $meeting);
+    }
 }

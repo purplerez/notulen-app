@@ -145,6 +145,20 @@
                 </div>
             @endif
 
+            <!-- Audio Retention Notice -->
+            @if($meeting->audio_deleted_at)
+                <div class="rounded-xl bg-slate-100 p-3 text-xs text-slate-600 border border-slate-200 font-medium flex flex-wrap items-center justify-between gap-1">
+                    <span>🗑️ Audio dihapus pada {{ \Carbon\Carbon::parse($meeting->audio_deleted_at)->translatedFormat('d F Y, H:i') }} WIB</span>
+                    <span class="text-[11px] text-slate-500">Transkrip mentah tetap tersimpan</span>
+                </div>
+            @elseif($meeting->audio_expires_at)
+                <div class="rounded-xl bg-indigo-50/70 p-3 text-xs text-indigo-800 border border-indigo-200/60 font-medium flex flex-wrap items-center justify-between gap-1">
+                    <span>⏱️ Audio tersedia sampai {{ \Carbon\Carbon::parse($meeting->audio_expires_at)->translatedFormat('d F Y, H:i') }} WIB</span>
+                    <span class="text-[11px] text-indigo-600 font-normal">Retensi 1 bulan</span>
+                </div>
+            @endif
+
+
             <!-- Close Attendance Control for Host -->
             @can('update', $meeting)
                 @if(!$meeting->absensi_closed_at)
@@ -172,6 +186,40 @@
                 @endif
             @endcan
         </div>
+
+        <!-- Audio Playback Player (Authorized Creator Notulis & Pimpinan Only, No Download) -->
+        @can('viewAudio', $meeting)
+            @if(!empty($audioStreamUrl))
+                <div class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                                🎧 Pemutar Audio Rekaman Rapat
+                            </h2>
+                            <p class="text-[11px] text-slate-500 mt-0.5">
+                                Akses terbatas untuk notulis pembuat dan pimpinan. Unduhan dinonaktifkan sesuai kebijakan privasi.
+                            </p>
+                        </div>
+                        <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-600/20">
+                            🔒 Streaming Privat
+                        </span>
+                    </div>
+
+                    <div class="rounded-xl bg-slate-50 p-3 border border-slate-100">
+                        <audio
+                            controls
+                            controlsList="nodownload"
+                            oncontextmenu="return false;"
+                            class="w-full h-10 rounded-lg outline-hidden"
+                            preload="metadata"
+                        >
+                            <source src="{{ $audioStreamUrl }}" type="audio/mp4">
+                            Browser Anda tidak mendukung pemutar audio ini.
+                        </audio>
+                    </div>
+                </div>
+            @endif
+        @endcan
 
         <!-- Section: Peserta Rapat & Kelola Peserta -->
         <div class="space-y-4">

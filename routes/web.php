@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AudioPlaybackController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
@@ -63,4 +64,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/meetings/{meeting}/segments', [RecordingController::class, 'uploadSegment'])->name('meetings.record.segments');
     Route::post('/meetings/{meeting}/finish', [RecordingController::class, 'finish'])->name('meetings.record.finish');
     Route::post('/meetings/{meeting}/retry-transcription', [RecordingController::class, 'retryTranscription'])->name('meetings.record.retry_transcription');
+
+    // Secure audio playback (short-lived signed URL, Range request support)
+    Route::get('/meetings/{meeting}/audio/stream', [AudioPlaybackController::class, 'stream'])
+        ->name('meetings.audio.stream')
+        ->middleware('signed');
 });
