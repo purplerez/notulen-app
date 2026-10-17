@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\MeetingAudioUploaded;
+use App\Jobs\TranscribeSegment;
 use App\Models\AudioSegment;
 use App\Models\Meeting;
 use App\Models\Organization;
@@ -242,6 +243,41 @@ class RecordingController extends Controller
             'message' => 'Perekaman berhasil diselesaikan dan seluruh segmen audio tersimpan.',
             'meeting' => $meeting->fresh(),
             'redirect_url' => route('meetings.show', $meeting),
+        ]);
+    }
+
+    /**
+     * Retry transcription for failed segments in a meeting.
+     */
+    public function retryTranscription(Meeting $meeting): JsonResponse
+    {
+        $this->authorize('record', $meeting);
+
+        $failedSegments = $meeting->segments()
+            ->whereIn('status', ['failed', 'uploaded'])
+            ->orderBy('seq')
+            ->get();
+
+        if ($failedSegments->isEmpty()) {
+            return response()->json([
+                'message' => 'Tidak ada segmen audio yang perlu dicoba ulang.',
+            ], 422);
+        }
+
+        $meeting->update(['status' => 'transcribing']);
+
+        foreach ($failedSegments as $segment) {
+            $segment->update(['status' => 'uploaded']);
+            TranscribeSegment::dispatch($segment);
+        }
+
+        Audit::record('stt_retry_manual', $meeting->id, [
+            'segments_count' => $failedSegments->count(),
+        ]);
+
+        return response()->json([
+            'message' => "Proses transkripsi untuk {$failedSegments->count()} segmen berhasil dijadwalkan ulang.",
+            'retried_count' => $failedSegments->count(),
         ]);
     }
 }

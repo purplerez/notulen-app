@@ -93,6 +93,8 @@ class Meeting extends Model
 
     /**
      * The user who created the meeting.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
     {
@@ -138,5 +140,25 @@ class Meeting extends Model
     public function segments(): HasMany
     {
         return $this->hasMany(AudioSegment::class)->orderBy('seq');
+    }
+
+    /**
+     * The transcribed segments for this meeting.
+     *
+     * @return HasMany<TranscriptSegment, $this>
+     */
+    public function transcriptSegments(): HasMany
+    {
+        return $this->hasMany(TranscriptSegment::class)->orderBy('start_sec');
+    }
+
+    /**
+     * The usage logs for external API calls of this meeting.
+     *
+     * @return HasMany<UsageLog, $this>
+     */
+    public function usageLogs(): HasMany
+    {
+        return $this->hasMany(UsageLog::class);
     }
 }

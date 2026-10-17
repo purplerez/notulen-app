@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\AuditLog;
+use App\Models\Meeting;
 use App\Models\User;
 
 class Audit
@@ -28,6 +29,8 @@ class Audit
             $orgId = $user->organization_id;
         } elseif (isset($meta['organization_id'])) {
             $orgId = (int) $meta['organization_id'];
+        } elseif (! empty($meetingId)) {
+            $orgId = (int) (Meeting::withoutOrganizationScope()->where('id', $meetingId)->value('organization_id') ?? 0);
         }
 
         return AuditLog::create([

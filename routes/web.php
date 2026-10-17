@@ -62,4 +62,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/meetings/{meeting}/start-recording', [RecordingController::class, 'start'])->name('meetings.record.start');
     Route::post('/meetings/{meeting}/segments', [RecordingController::class, 'uploadSegment'])->name('meetings.record.segments');
     Route::post('/meetings/{meeting}/finish', [RecordingController::class, 'finish'])->name('meetings.record.finish');
+    Route::post('/meetings/{meeting}/retry-transcription', [RecordingController::class, 'retryTranscription'])->name('meetings.record.retry_transcription');
 });
