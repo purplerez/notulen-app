@@ -21,6 +21,15 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                @can('record', $meeting)
+                    <a
+                        href="{{ route('meetings.record', $meeting) }}"
+                        class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-rose-700 active:scale-[0.98] transition"
+                    >
+                        🎙️ Rekam Rapat
+                    </a>
+                @endcan
+
                 <a
                     href="{{ route('meetings.attendance.host', $meeting) }}"
                     class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 active:scale-[0.98] transition"

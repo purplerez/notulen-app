@@ -8,7 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $organization_id
+ * @property int $created_by
+ * @property string $title
+ * @property string $status
+ * @property int $expected_segments
+ * @property Carbon|null $started_at
+ * @property Carbon|null $ended_at
+ * @property Carbon|null $audio_saved_at
+ * @property Carbon|null $audio_expires_at
+ * @property Carbon|null $audio_deleted_at
+ */
 class Meeting extends Model
 {
     use BelongsToOrganization, HasFactory;
@@ -114,5 +128,15 @@ class Meeting extends Model
     public function meetingSignatories(): HasMany
     {
         return $this->hasMany(MeetingSignatory::class);
+    }
+
+    /**
+     * The recorded audio segments for this meeting.
+     *
+     * @return HasMany<AudioSegment, $this>
+     */
+    public function segments(): HasMany
+    {
+        return $this->hasMany(AudioSegment::class)->orderBy('seq');
     }
 }

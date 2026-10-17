@@ -93,4 +93,18 @@ class MeetingPolicy
     {
         return $this->update($user, $meeting);
     }
+
+    /**
+     * Determine whether the user can record the meeting and upload audio segments.
+     * Strictly restricted to the Notulis who created the meeting within the same tenant.
+     * Admin, super admin, and pimpinan cannot access raw audio or record.
+     */
+    public function record(User $user, Meeting $meeting): bool
+    {
+        if ($user->organization_id !== $meeting->organization_id) {
+            return false;
+        }
+
+        return $user->isNotulis() && $meeting->created_by === $user->id;
+    }
 }

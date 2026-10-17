@@ -95,4 +95,34 @@ class Organization extends Model
     {
         return $this->hasMany(Meeting::class);
     }
+
+    /**
+     * Get the audio segments for this organization.
+     */
+    public function audioSegments(): HasMany
+    {
+        return $this->hasMany(AudioSegment::class);
+    }
+
+    /**
+     * Calculate used quota in minutes based on stored audio segments.
+     */
+    public function usedQuotaMinutes(): int
+    {
+        $usedSeconds = (float) $this->audioSegments()->sum('duration_sec');
+
+        return (int) ceil($usedSeconds / 60);
+    }
+
+    /**
+     * Determine whether the organization has remaining quota available.
+     */
+    public function hasAvailableQuota(): bool
+    {
+        if ($this->quota_minutes <= 0) {
+            return false;
+        }
+
+        return $this->usedQuotaMinutes() < $this->quota_minutes;
+    }
 }

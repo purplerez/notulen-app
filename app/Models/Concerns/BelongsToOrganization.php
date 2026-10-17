@@ -40,6 +40,8 @@ trait BelongsToOrganization
 
     /**
      * Define the relationship to the organization.
+     *
+     * @return BelongsTo<Organization, $this>
      */
     public function organization(): BelongsTo
     {

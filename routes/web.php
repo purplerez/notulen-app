@@ -6,6 +6,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MeetingAttendeeController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\RecordingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,4 +56,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/meetings/{meeting}/close-attendance', [AttendanceController::class, 'closeAttendance'])->name('meetings.attendance.close');
     Route::put('/meetings/{meeting}/attendees/{attendee}/status', [AttendanceController::class, 'updateStatus'])->name('meetings.attendance.update_status');
     Route::get('/meetings/{meeting}/recap', [AttendanceController::class, 'recap'])->name('meetings.attendance.recap');
+
+    // Audio recording session, live segment upload, and finish
+    Route::get('/meetings/{meeting}/record', [RecordingController::class, 'show'])->name('meetings.record');
+    Route::post('/meetings/{meeting}/start-recording', [RecordingController::class, 'start'])->name('meetings.record.start');
+    Route::post('/meetings/{meeting}/segments', [RecordingController::class, 'uploadSegment'])->name('meetings.record.segments');
+    Route::post('/meetings/{meeting}/finish', [RecordingController::class, 'finish'])->name('meetings.record.finish');
 });
