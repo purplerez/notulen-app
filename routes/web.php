@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MeetingAttendeeController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\RecordingController;
+use App\Http\Controllers\TranscriptController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -69,4 +70,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/meetings/{meeting}/audio/stream', [AudioPlaybackController::class, 'stream'])
         ->name('meetings.audio.stream')
         ->middleware('signed');
+
+    // Raw transcript viewing and manual editing
+    Route::get('/meetings/{meeting}/transcript', [TranscriptController::class, 'show'])->name('meetings.transcript.show');
+    Route::put('/meetings/{meeting}/transcript/{segment}', [TranscriptController::class, 'update'])->name('meetings.transcript.update');
+    Route::post('/meetings/{meeting}/transcript/{segment}/reset', [TranscriptController::class, 'reset'])->name('meetings.transcript.reset');
 });

@@ -44,6 +44,16 @@
                     📊 Rekap
                 </a>
 
+                @can('viewTranscript', $meeting)
+                    <a
+                        href="{{ route('meetings.transcript.show', $meeting) }}"
+                        class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50"
+                    >
+                        📄 Transkrip Mentah
+                    </a>
+                @endcan
+
+
                 @can('update', $meeting)
                     <a
                         href="{{ route('meetings.edit', $meeting) }}"

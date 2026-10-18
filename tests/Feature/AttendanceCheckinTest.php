@@ -121,11 +121,12 @@ class AttendanceCheckinTest extends TestCase
         $notulis = User::factory()->notulis()->create(['organization_id' => $org->id]);
 
         // Meeting started 30 minutes ago, late threshold is 15 minutes
+        $startedAgo = now()->subMinutes(30);
         $meeting = Meeting::factory()->create([
             'organization_id' => $org->id,
             'created_by' => $notulis->id,
-            'meeting_date' => now()->format('Y-m-d'),
-            'start_time' => now()->subMinutes(30)->format('H:i'),
+            'meeting_date' => $startedAgo->format('Y-m-d'),
+            'start_time' => $startedAgo->format('H:i'),
             'late_after_minutes' => 15,
         ]);
 

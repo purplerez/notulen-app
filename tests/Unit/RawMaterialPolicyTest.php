@@ -135,4 +135,22 @@ class RawMaterialPolicyTest extends TestCase
         $this->assertTrue($this->policy->viewTranscript($this->notulisA, $this->meeting));
         $this->assertTrue($this->policy->viewTranscript($this->pimpinanA, $this->meeting));
     }
+
+    public function test_update_transcript_authorization_matrix(): void
+    {
+        // Admin forbidden
+        $this->assertFalse($this->policy->updateTranscript($this->adminA, $this->meeting));
+
+        // Pimpinan forbidden (read-only)
+        $this->assertFalse($this->policy->updateTranscript($this->pimpinanA, $this->meeting));
+
+        // Other notulis forbidden
+        $this->assertFalse($this->policy->updateTranscript($this->otherNotulisA, $this->meeting));
+
+        // Cross-tenant user forbidden
+        $this->assertFalse($this->policy->updateTranscript($this->notulisB, $this->meeting));
+
+        // Creator notulis allowed
+        $this->assertTrue($this->policy->updateTranscript($this->notulisA, $this->meeting));
+    }
 }

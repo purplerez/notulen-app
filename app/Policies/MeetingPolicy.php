@@ -125,4 +125,13 @@ class MeetingPolicy
     {
         return app(RawMaterialPolicy::class)->viewTranscript($user, $meeting);
     }
+
+    /**
+     * Determine whether the user can edit the transcript of the meeting.
+     * Enforced by RawMaterialPolicy.
+     */
+    public function updateTranscript(mixed $user, Meeting $meeting): bool
+    {
+        return app(RawMaterialPolicy::class)->updateTranscript($user, $meeting);
+    }
 }

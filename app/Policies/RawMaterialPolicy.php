@@ -80,4 +80,29 @@ class RawMaterialPolicy
 
         return $isCreatorNotulis || $isPimpinan;
     }
+
+    /**
+     * Determine whether the user can edit the transcript of the meeting.
+     * Strictly restricted to the Notulis creator. Pimpinan is read-only.
+     * Admin and super admin are forbidden.
+     */
+    public function updateTranscript(mixed $user, Meeting $meeting): bool
+    {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
+        // Multitenant isolation
+        if ((int) $user->organization_id !== (int) $meeting->organization_id) {
+            return false;
+        }
+
+        // Admin is strictly forbidden
+        if ($user->isAdmin()) {
+            return false;
+        }
+
+        // Only the notulis who created the meeting is allowed to edit
+        return $user->isNotulis() && (int) $meeting->created_by === (int) $user->id;
+    }
 }

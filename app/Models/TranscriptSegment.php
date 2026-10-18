@@ -76,4 +76,42 @@ class TranscriptSegment extends Model
     {
         return $this->belongsTo(User::class, 'edited_by');
     }
+
+    /**
+     * Get the formatted start time in MM:SS format.
+     */
+    public function getFormattedStartTime(): string
+    {
+        $minutes = (int) floor($this->start_sec / 60);
+        $seconds = (int) floor(fmod($this->start_sec, 60));
+
+        return sprintf('%02d:%02d', $minutes, $seconds);
+    }
+
+    /**
+     * Get the formatted end time in MM:SS format.
+     */
+    public function getFormattedEndTime(): string
+    {
+        $minutes = (int) floor($this->end_sec / 60);
+        $seconds = (int) floor(fmod($this->end_sec, 60));
+
+        return sprintf('%02d:%02d', $minutes, $seconds);
+    }
+
+    /**
+     * Determine whether the segment text has been manually edited.
+     */
+    public function isEdited(): bool
+    {
+        return $this->edited_text !== null && $this->edited_text !== $this->text;
+    }
+
+    /**
+     * Get the effective text for display (edited text if available, otherwise original text).
+     */
+    public function getEffectiveText(): string
+    {
+        return $this->edited_text !== null ? $this->edited_text : $this->text;
+    }
 }

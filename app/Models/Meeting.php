@@ -170,4 +170,72 @@ class Meeting extends Model
     {
         return false;
     }
+
+    /**
+     * Calculate difference statistics between original text and edited text for this meeting.
+     *
+     * @return array{
+     *     difference_percent: float,
+     *     total_segments: int,
+     *     edited_segments: int,
+     *     edited_segments_percent: float,
+     *     total_words_original: int,
+     *     total_words_edited: int
+     * }
+     */
+    public function getTranscriptStats(): array
+    {
+        $segments = $this->transcriptSegments()->get();
+
+        $totalSegments = $segments->count();
+        if ($totalSegments === 0) {
+            return [
+                'difference_percent' => 0.0,
+                'total_segments' => 0,
+                'edited_segments' => 0,
+                'edited_segments_percent' => 0.0,
+                'total_words_original' => 0,
+                'total_words_edited' => 0,
+            ];
+        }
+
+        $editedSegments = 0;
+        $originalTexts = [];
+        $effectiveTexts = [];
+
+        foreach ($segments as $seg) {
+            $orig = (string) $seg->text;
+            $eff = $seg->edited_text !== null ? (string) $seg->edited_text : $orig;
+
+            if ($seg->edited_text !== null && $seg->edited_text !== $seg->text) {
+                $editedSegments++;
+            }
+
+            $originalTexts[] = $orig;
+            $effectiveTexts[] = $eff;
+        }
+
+        $allOriginal = trim(implode(' ', $originalTexts));
+        $allEffective = trim(implode(' ', $effectiveTexts));
+
+        $similarity = 100.0;
+        if ($allOriginal !== '' || $allEffective !== '') {
+            similar_text($allOriginal, $allEffective, $similarity);
+        }
+
+        $diffPercent = round(max(0.0, 100.0 - $similarity), 1);
+        $editedPercent = round(($editedSegments / $totalSegments) * 100.0, 1);
+
+        $wordsOriginal = str_word_count($allOriginal);
+        $wordsEdited = str_word_count($allEffective);
+
+        return [
+            'difference_percent' => $diffPercent,
+            'total_segments' => $totalSegments,
+            'edited_segments' => $editedSegments,
+            'edited_segments_percent' => $editedPercent,
+            'total_words_original' => $wordsOriginal,
+            'total_words_edited' => $wordsEdited,
+        ];
+    }
 }
