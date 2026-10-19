@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -22,6 +23,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $audio_saved_at
  * @property Carbon|null $audio_expires_at
  * @property Carbon|null $audio_deleted_at
+ * @property Carbon|null $share_expires_at
+ * @property string $style
+ * @property bool $use_followup
  */
 class Meeting extends Model
 {
@@ -163,12 +167,64 @@ class Meeting extends Model
     }
 
     /**
+     * The minutes versions recorded for this meeting.
+     *
+     * @return HasMany<Minute, $this>
+     */
+    public function minutes(): HasMany
+    {
+        return $this->hasMany(Minute::class)->orderBy('version');
+    }
+
+    /**
+     * The markers recorded for this meeting.
+     *
+     * @return HasMany<Marker, $this>
+     */
+    public function markers(): HasMany
+    {
+        return $this->hasMany(Marker::class)->orderBy('at_sec');
+    }
+
+    /**
+     * The action items associated with this meeting.
+     *
+     * @return HasMany<ActionItem, $this>
+     */
+    public function actionItems(): HasMany
+    {
+        return $this->hasMany(ActionItem::class);
+    }
+
+    /**
+     * The latest finalized minute for this meeting.
+     *
+     * @return HasOne<Minute, $this>
+     */
+    public function latestFinalMinute(): HasOne
+    {
+        return $this->hasOne(Minute::class)->ofMany(
+            ['version' => 'max'],
+            fn ($query) => $query->where('minutes.status', 'final')
+        );
+    }
+
+    /**
+     * The current minute record (latest version, draft or final).
+     *
+     * @return HasOne<Minute, $this>
+     */
+    public function currentMinute(): HasOne
+    {
+        return $this->hasOne(Minute::class)->latestOfMany('version');
+    }
+
+    /**
      * Determine whether the meeting minutes are finalized.
-     * When minutes feature is developed (sections 8.4-8.5), check finalized minute versions.
      */
     public function isMinutesFinal(): bool
     {
-        return false;
+        return $this->latestFinalMinute()->exists();
     }
 
     /**

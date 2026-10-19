@@ -134,4 +134,13 @@ class MeetingPolicy
     {
         return app(RawMaterialPolicy::class)->updateTranscript($user, $meeting);
     }
+
+    /**
+     * Determine whether the user can revise finalized minutes for the meeting.
+     * Enforced by MinutePolicy.
+     */
+    public function revise(mixed $user, Meeting $meeting): bool
+    {
+        return app(MinutePolicy::class)->revise($user, $meeting);
+    }
 }

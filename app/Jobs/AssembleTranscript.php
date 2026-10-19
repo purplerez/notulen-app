@@ -49,5 +49,8 @@ class AssembleTranscript implements ShouldQueue
 
         // Dispatch audio merging job
         MergeAudio::dispatch($this->meeting);
+
+        // Dispatch minutes drafting job
+        GenerateMinutes::dispatch($this->meeting);
     }
 }

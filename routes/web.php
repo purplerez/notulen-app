@@ -7,6 +7,7 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MeetingAttendeeController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\MinuteController;
 use App\Http\Controllers\RecordingController;
 use App\Http\Controllers\TranscriptController;
 use App\Http\Controllers\UserController;
@@ -75,4 +76,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/meetings/{meeting}/transcript', [TranscriptController::class, 'show'])->name('meetings.transcript.show');
     Route::put('/meetings/{meeting}/transcript/{segment}', [TranscriptController::class, 'update'])->name('meetings.transcript.update');
     Route::post('/meetings/{meeting}/transcript/{segment}/reset', [TranscriptController::class, 'reset'])->name('meetings.transcript.reset');
+
+    // Minutes: show, edit, update, finalize, revise, acknowledge
+    Route::get('/meetings/{meeting}/minutes', [MinuteController::class, 'show'])->name('meetings.minutes.show');
+    Route::get('/meetings/{meeting}/minutes/edit', [MinuteController::class, 'edit'])->name('meetings.minutes.edit');
+    Route::put('/meetings/{meeting}/minutes', [MinuteController::class, 'update'])->name('meetings.minutes.update');
+    Route::post('/meetings/{meeting}/minutes/finalize', [MinuteController::class, 'finalize'])->name('meetings.minutes.finalize');
+    Route::post('/meetings/{meeting}/minutes/revise', [MinuteController::class, 'revise'])->name('meetings.minutes.revise');
+    Route::post('/meetings/{meeting}/minutes/{minute}/acknowledge', [MinuteController::class, 'acknowledge'])->name('meetings.minutes.acknowledge');
 });
