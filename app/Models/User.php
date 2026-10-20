@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -55,5 +56,15 @@ class User extends Authenticatable
     public function isPimpinan(): bool
     {
         return $this->role === 'pimpinan';
+    }
+
+    /**
+     * Meetings created by this user.
+     *
+     * @return HasMany<Meeting, $this>
+     */
+    public function createdMeetings(): HasMany
+    {
+        return $this->hasMany(Meeting::class, 'created_by');
     }
 }

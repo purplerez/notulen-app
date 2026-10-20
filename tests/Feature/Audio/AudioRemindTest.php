@@ -3,6 +3,7 @@
 namespace Tests\Feature\Audio;
 
 use App\Models\Meeting;
+use App\Models\Minute;
 use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\AudioRetentionExpiringNotification;
@@ -98,6 +99,27 @@ class AudioRemindTest extends TestCase
         Notification::fake();
 
         $this->artisan('audio:remind')
+            ->assertSuccessful();
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_audio_remind_skips_when_minutes_are_already_finalized(): void
+    {
+        Minute::create([
+            'organization_id' => $this->org->id,
+            'meeting_id' => $this->expiringMeeting->id,
+            'version' => 1,
+            'status' => 'final',
+            'content_json' => ['ringkasan' => 'Notulen sudah resmi final.'],
+            'created_by' => $this->creatorNotulis->id,
+            'finalized_at' => now()->subDay(),
+        ]);
+
+        Notification::fake();
+
+        $this->artisan('audio:remind')
+            ->expectsOutputToContain('Total pengingat terkirim: 0')
             ->assertSuccessful();
 
         Notification::assertNothingSent();

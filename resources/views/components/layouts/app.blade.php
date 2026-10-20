@@ -19,14 +19,14 @@
         <!-- Top Navigation Bar (Mobile-first) -->
         <header class="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur backdrop-filter">
             <div class="mx-auto flex h-16 max-w-lg items-center justify-between px-4 sm:max-w-2xl sm:px-6">
-                <div class="flex items-center gap-2">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-2 hover:opacity-90 transition">
                     <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold shadow-sm">
                         N
                     </span>
                     <span class="text-base font-semibold tracking-tight text-slate-900">
                         {{ config('app.name', 'Notulensi Rapat') }}
                     </span>
-                </div>
+                </a>
                 @isset($headerActions)
                     <div class="flex items-center gap-2">
                         {{ $headerActions }}

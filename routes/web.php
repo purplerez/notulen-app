@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AudioPlaybackController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
@@ -32,6 +33,7 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit_logs.index');
 
     // User management (creating notulis accounts)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

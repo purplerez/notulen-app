@@ -294,4 +294,46 @@ class Meeting extends Model
             'total_words_edited' => $wordsEdited,
         ];
     }
+
+    /**
+     * Get retention status indicator for raw audio.
+     *
+     * @return array{
+     *     status: 'available'|'expired'|'deleted'|'none',
+     *     label: string,
+     *     class: string
+     * }
+     */
+    public function getAudioRetentionInfo(): array
+    {
+        if ($this->audio_deleted_at) {
+            return [
+                'status' => 'deleted',
+                'label' => 'Audio dihapus pada '.$this->audio_deleted_at->translatedFormat('d M Y'),
+                'class' => 'bg-slate-100 text-slate-600',
+            ];
+        }
+
+        if ($this->audio_expires_at) {
+            if ($this->audio_expires_at->isPast()) {
+                return [
+                    'status' => 'expired',
+                    'label' => 'Audio kedaluwarsa ('.$this->audio_expires_at->translatedFormat('d M Y').')',
+                    'class' => 'bg-rose-50 text-rose-700 ring-1 ring-rose-600/20',
+                ];
+            }
+
+            return [
+                'status' => 'available',
+                'label' => 'Audio tersedia sampai '.$this->audio_expires_at->translatedFormat('d M Y'),
+                'class' => 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20',
+            ];
+        }
+
+        return [
+            'status' => 'none',
+            'label' => 'Audio belum tersedia',
+            'class' => 'bg-slate-50 text-slate-400',
+        ];
+    }
 }

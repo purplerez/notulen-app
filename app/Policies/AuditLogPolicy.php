@@ -12,15 +12,35 @@ class AuditLogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->isAdmin() || $user->isPimpinan() || $user->isNotulis();
     }
 
     /**
      * Determine whether the user can view a specific audit log.
+     * Admin and pimpinan can view all logs in their organization.
+     * Notulis can only view logs tied to meetings they created.
      */
     public function view(User $user, AuditLog $auditLog): bool
     {
-        return $user->organization_id === $auditLog->organization_id;
+        if ((int) $user->organization_id !== (int) $auditLog->organization_id) {
+            return false;
+        }
+
+        if ($user->isAdmin() || $user->isPimpinan()) {
+            return true;
+        }
+
+        if ($user->isNotulis()) {
+            if (! $auditLog->meeting_id) {
+                return false;
+            }
+
+            $meeting = $auditLog->meeting;
+
+            return $meeting && (int) $meeting->created_by === (int) $user->id;
+        }
+
+        return false;
     }
 
     /**

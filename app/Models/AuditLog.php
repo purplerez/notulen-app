@@ -78,9 +78,69 @@ class AuditLog extends Model
 
     /**
      * Actor user relation.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function actorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');
+    }
+
+    /**
+     * Actor attendee relation (for public checkins).
+     *
+     * @return BelongsTo<Attendee, $this>
+     */
+    public function actorAttendee(): BelongsTo
+    {
+        return $this->belongsTo(Attendee::class, 'actor_attendee_id');
+    }
+
+    /**
+     * Meeting relation.
+     * Note: audit_logs doesn't have an FK constraint on meeting_id, so the meeting may have been deleted.
+     *
+     * @return BelongsTo<Meeting, $this>
+     */
+    public function meeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class, 'meeting_id');
+    }
+
+    /**
+     * Human-readable Indonesian label for audit log action.
+     */
+    public function getActionLabelAttribute(): string
+    {
+        return match ($this->action) {
+            'audio_play' => 'Pemutaran Audio',
+            'audio_merge' => 'Penggabungan Audio',
+            'audio_purge' => 'Pembersihan Audio (Retensi)',
+            'transcript_view' => 'Melihat Transkrip Mentah',
+            'transcript_edit' => 'Penyuntingan Transkrip',
+            'transcript_reset' => 'Reset Transkrip ke STT',
+            'transcript_assemble' => 'Perakitan Transkrip',
+            'minute_draft_created' => 'Draf Notulen Dibuat',
+            'minute_finalize' => 'Finalisasi Notulen',
+            'minute_revise' => 'Pengajuan Revisi Notulen',
+            'minute_acknowledge' => 'Konfirmasi Diketahui Notulen',
+            'attendance_closed' => 'Penutupan Absensi',
+            'attendance_corrected' => 'Koreksi Data Absensi',
+            'attendee_manual_checkin' => 'Presensi Manual',
+            'attendee_checkin' => 'Presensi Mandiri QR',
+            'guest_approved' => 'Persetujuan Tamu',
+            'guest_rejected' => 'Penolakan Tamu',
+            'recording_start' => 'Mulai Rekaman Rapat',
+            'recording_finish' => 'Selesai Rekaman Rapat',
+            'meeting_create' => 'Pembuatan Room Rapat',
+            'meeting_delete' => 'Penghapusan Rapat',
+            'user_create' => 'Pembuatan Akun Notulis',
+            'login' => 'Masuk Aplikasi (Login)',
+            'logout' => 'Keluar Aplikasi (Logout)',
+            'stt_waiting_quota' => 'Menunggu Kuota STT',
+            'stt_failed' => 'Kegagalan STT',
+            'stt_retry_manual' => 'Coba Ulang Transkripsi',
+            default => str_replace('_', ' ', ucfirst($this->action)),
+        };
     }
 }
