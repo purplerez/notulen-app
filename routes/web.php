@@ -11,6 +11,10 @@ use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MeetingPdfController;
 use App\Http\Controllers\MinuteController;
 use App\Http\Controllers\OrganizationKopController;
+use App\Http\Controllers\Platform\PlatformAuthController;
+use App\Http\Controllers\Platform\PlatformDashboardController;
+use App\Http\Controllers\Platform\PlatformRateController;
+use App\Http\Controllers\Platform\PlatformReconciliationController;
 use App\Http\Controllers\PublicShareController;
 use App\Http\Controllers\RecordingController;
 use App\Http\Controllers\ShareLinkController;
@@ -110,4 +114,33 @@ Route::middleware('auth')->group(function () {
     Route::get('/meetings/{meeting}/minutes/pdf', [MeetingPdfController::class, 'minute'])->name('meetings.minutes.pdf');
     Route::get('/meetings/{meeting}/minutes/{minute}/pdf', [MeetingPdfController::class, 'minute'])->name('meetings.minutes.version.pdf');
     Route::get('/meetings/{meeting}/attendance/pdf', [MeetingPdfController::class, 'attendanceRecap'])->name('meetings.attendance.pdf');
+});
+
+// Super Admin Platform Routes (Guard: platform)
+Route::prefix('platform')->group(function () {
+    // Guest platform routes
+    Route::middleware('guest:platform')->group(function () {
+        Route::get('/login', [PlatformAuthController::class, 'showLoginForm'])->name('platform.login');
+        Route::post('/login', [PlatformAuthController::class, 'login'])->name('platform.login.submit');
+    });
+
+    // 2FA Verification (during pre-auth or initial setup)
+    Route::get('/verify-2fa', [PlatformAuthController::class, 'show2faForm'])->name('platform.verify_2fa');
+    Route::post('/verify-2fa', [PlatformAuthController::class, 'verify2fa'])->name('platform.verify_2fa.submit');
+
+    // Authenticated & 2FA-verified platform routes
+    Route::middleware(['auth:platform', 'platform.2fa'])->group(function () {
+        Route::post('/logout', [PlatformAuthController::class, 'logout'])->name('platform.logout');
+
+        Route::get('/', [PlatformDashboardController::class, 'index'])->name('platform.dashboard');
+        Route::get('/organizations/{organization}', [PlatformDashboardController::class, 'organization'])->name('platform.organizations.show');
+        Route::get('/organizations/{organization}/export-csv', [PlatformDashboardController::class, 'exportCsv'])->name('platform.organizations.export_csv');
+
+        Route::get('/reconciliation', [PlatformReconciliationController::class, 'index'])->name('platform.reconciliation.index');
+        Route::post('/reconciliation', [PlatformReconciliationController::class, 'store'])->name('platform.reconciliation.store');
+
+        Route::get('/rates', [PlatformRateController::class, 'index'])->name('platform.rates.index');
+        Route::post('/rates/price', [PlatformRateController::class, 'storePriceRate'])->name('platform.rates.price.store');
+        Route::post('/rates/fx', [PlatformRateController::class, 'storeFxRate'])->name('platform.rates.fx.store');
+    });
 });

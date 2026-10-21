@@ -148,6 +148,16 @@ class AuditLog extends Model
             'link_open' => 'Pembukaan Tautan Berbagi',
             'link_revoke' => 'Pencabutan Tautan Berbagi',
             'link_pdf_download' => 'Unduh PDF via Tautan Publik',
+            'platform_login' => 'Masuk Platform (Super Admin)',
+            'platform_login_2fa' => 'Verifikasi 2FA Platform',
+            'platform_logout' => 'Keluar Platform (Super Admin)',
+            'platform_dashboard_view' => 'Melihat Dashboard Platform',
+            'platform_org_view' => 'Melihat Detail Lembaga Platform',
+            'platform_export_csv' => 'Ekspor CSV Biaya Lembaga',
+            'platform_rate_create' => 'Penambahan Tarif Layanan',
+            'platform_fx_update' => 'Pembaruan Kurs USD/IDR',
+            'platform_reconciliation_save' => 'Pencatatan Rekonsiliasi Tagihan',
+            'storage_cost_calculated' => 'Perhitungan Biaya Penyimpanan',
             default => str_replace('_', ' ', ucfirst($this->action)),
         };
     }

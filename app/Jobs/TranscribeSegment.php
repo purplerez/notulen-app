@@ -9,6 +9,7 @@ use App\Models\AudioSegment;
 use App\Models\TranscriptSegment;
 use App\Models\UsageLog;
 use App\Notifications\SttQuotaExceededNotification;
+use App\Services\Cost\CostCalculator;
 use App\Support\Audit;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -66,6 +67,8 @@ class TranscribeSegment implements ShouldQueue
             ->sum('audio_sec');
 
         if (($recentAudioSec + $audioSec) > $ashLimit) {
+            $cost = CostCalculator::calculate($providerName, $modelName, 'detik_audio', $audioSec);
+
             UsageLog::create([
                 'organization_id' => $meeting->organization_id,
                 'meeting_id' => $meeting->id,
@@ -73,7 +76,14 @@ class TranscribeSegment implements ShouldQueue
                 'kind' => 'stt',
                 'provider' => $providerName,
                 'model' => $modelName,
+                'unit' => 'detik_audio',
+                'qty' => $audioSec,
                 'audio_sec' => $audioSec,
+                'rate_snapshot' => $cost['rate_snapshot'],
+                'est_cost_usd' => $cost['est_cost_usd'],
+                'est_cost_idr' => $cost['est_cost_idr'],
+                'fx_rate_used' => $cost['fx_rate_used'],
+                'est_cost' => $cost['est_cost_usd'],
                 'status' => 'ditahan',
                 'attempt' => $attempt,
                 'http_status' => null,
@@ -109,6 +119,8 @@ class TranscribeSegment implements ShouldQueue
             $this->segment->update(['status' => 'transcribing']);
             $result = $provider->transcribe($fullPath, $this->segment->mime, config('stt.language', 'id'));
         } catch (RateLimitException $e) {
+            $cost = CostCalculator::calculate($providerName, $modelName, 'detik_audio', $audioSec);
+
             UsageLog::create([
                 'organization_id' => $meeting->organization_id,
                 'meeting_id' => $meeting->id,
@@ -116,7 +128,14 @@ class TranscribeSegment implements ShouldQueue
                 'kind' => 'stt',
                 'provider' => $providerName,
                 'model' => $modelName,
+                'unit' => 'detik_audio',
+                'qty' => $audioSec,
                 'audio_sec' => $audioSec,
+                'rate_snapshot' => $cost['rate_snapshot'],
+                'est_cost_usd' => $cost['est_cost_usd'],
+                'est_cost_idr' => $cost['est_cost_idr'],
+                'fx_rate_used' => $cost['fx_rate_used'],
+                'est_cost' => $cost['est_cost_usd'],
                 'status' => 'gagal',
                 'attempt' => $attempt,
                 'http_status' => 429,
@@ -142,6 +161,7 @@ class TranscribeSegment implements ShouldQueue
             return;
         } catch (Throwable $e) {
             $httpStatus = (int) ($e->getCode() ?: 500);
+            $cost = CostCalculator::calculate($providerName, $modelName, 'detik_audio', $audioSec);
 
             UsageLog::create([
                 'organization_id' => $meeting->organization_id,
@@ -150,7 +170,14 @@ class TranscribeSegment implements ShouldQueue
                 'kind' => 'stt',
                 'provider' => $providerName,
                 'model' => $modelName,
+                'unit' => 'detik_audio',
+                'qty' => $audioSec,
                 'audio_sec' => $audioSec,
+                'rate_snapshot' => $cost['rate_snapshot'],
+                'est_cost_usd' => $cost['est_cost_usd'],
+                'est_cost_idr' => $cost['est_cost_idr'],
+                'fx_rate_used' => $cost['fx_rate_used'],
+                'est_cost' => $cost['est_cost_usd'],
                 'status' => 'gagal',
                 'attempt' => $attempt,
                 'http_status' => $httpStatus > 0 ? $httpStatus : 500,
@@ -174,6 +201,9 @@ class TranscribeSegment implements ShouldQueue
         }
 
         // 4. Record Successful Usage
+        $finalDuration = (float) ($result->duration ?: $audioSec);
+        $cost = CostCalculator::calculate($providerName, $modelName, 'detik_audio', $finalDuration);
+
         UsageLog::create([
             'organization_id' => $meeting->organization_id,
             'meeting_id' => $meeting->id,
@@ -181,7 +211,14 @@ class TranscribeSegment implements ShouldQueue
             'kind' => 'stt',
             'provider' => $providerName,
             'model' => $modelName,
-            'audio_sec' => $result->duration ?: $audioSec,
+            'unit' => 'detik_audio',
+            'qty' => $finalDuration,
+            'audio_sec' => $finalDuration,
+            'rate_snapshot' => $cost['rate_snapshot'],
+            'est_cost_usd' => $cost['est_cost_usd'],
+            'est_cost_idr' => $cost['est_cost_idr'],
+            'fx_rate_used' => $cost['fx_rate_used'],
+            'est_cost' => $cost['est_cost_usd'],
             'status' => 'sukses',
             'attempt' => $attempt,
             'http_status' => 200,

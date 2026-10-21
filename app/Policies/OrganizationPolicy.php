@@ -10,8 +10,12 @@ class OrganizationPolicy
     /**
      * Determine whether the user can view the organization details and kop.
      */
-    public function view(User $user, Organization $organization): bool
+    public function view(mixed $user, Organization $organization): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         return (int) $user->organization_id === (int) $organization->id;
     }
 
@@ -19,8 +23,12 @@ class OrganizationPolicy
      * Determine whether the user can update the organization settings or kop.
      * Only Admin of the same organization can update.
      */
-    public function update(User $user, Organization $organization): bool
+    public function update(mixed $user, Organization $organization): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         return (int) $user->organization_id === (int) $organization->id && $user->isAdmin();
     }
 }

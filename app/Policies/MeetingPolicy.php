@@ -11,9 +11,9 @@ class MeetingPolicy
      * Determine whether the user can view the meetings list.
      * Admin, pimpinan, and notulis can all view the list of meetings for their tenant.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(mixed $user): bool
     {
-        return true;
+        return $user instanceof User;
     }
 
     /**
@@ -21,8 +21,12 @@ class MeetingPolicy
      * Admin and pimpinan see all meetings in their organization.
      * Notulis can only view meetings they created.
      */
-    public function view(User $user, Meeting $meeting): bool
+    public function view(mixed $user, Meeting $meeting): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         if ($user->organization_id !== $meeting->organization_id) {
             return false;
         }
@@ -38,8 +42,12 @@ class MeetingPolicy
      * Determine whether the user can create meetings.
      * Admin and notulis are allowed. Pimpinan is not allowed.
      */
-    public function create(User $user): bool
+    public function create(mixed $user): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         return $user->isAdmin() || $user->isNotulis();
     }
 
@@ -48,8 +56,12 @@ class MeetingPolicy
      * Admin can update any meeting in their organization.
      * Notulis can only update meetings they created.
      */
-    public function update(User $user, Meeting $meeting): bool
+    public function update(mixed $user, Meeting $meeting): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         if ($user->organization_id !== $meeting->organization_id) {
             return false;
         }
@@ -69,8 +81,12 @@ class MeetingPolicy
      * Determine whether the user can delete the meeting.
      * Admin can delete; notulis can delete their own meeting; pimpinan cannot.
      */
-    public function delete(User $user, Meeting $meeting): bool
+    public function delete(mixed $user, Meeting $meeting): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         if ($user->organization_id !== $meeting->organization_id) {
             return false;
         }
@@ -89,7 +105,7 @@ class MeetingPolicy
     /**
      * Determine whether the user can manage attendees for the meeting.
      */
-    public function manageAttendees(User $user, Meeting $meeting): bool
+    public function manageAttendees(mixed $user, Meeting $meeting): bool
     {
         return $this->update($user, $meeting);
     }
@@ -99,8 +115,12 @@ class MeetingPolicy
      * Strictly restricted to the Notulis who created the meeting within the same tenant.
      * Admin, super admin, and pimpinan cannot access raw audio or record.
      */
-    public function record(User $user, Meeting $meeting): bool
+    public function record(mixed $user, Meeting $meeting): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         if ($user->organization_id !== $meeting->organization_id) {
             return false;
         }
@@ -148,8 +168,12 @@ class MeetingPolicy
      * Determine whether the user can manage public share links for the meeting.
      * Restricted strictly to the Notulis creator of the meeting within the same tenant.
      */
-    public function manageShareLinks(User $user, Meeting $meeting): bool
+    public function manageShareLinks(mixed $user, Meeting $meeting): bool
     {
+        if (! ($user instanceof User)) {
+            return false;
+        }
+
         if ((int) $user->organization_id !== (int) $meeting->organization_id) {
             return false;
         }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Meeting;
 use App\Models\Minute;
+use App\Models\User;
 use App\Support\Audit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class MeetingPdfController extends Controller
             if ($versionParam) {
                 $minute = $meeting->minutes()->where('version', (int) $versionParam)->first();
             } else {
-                if ($user && $user->isPimpinan()) {
+                if ($user instanceof User && $user->isPimpinan()) {
                     $minute = $meeting->latestFinalMinute;
                 } else {
                     $minute = $meeting->latestFinalMinute ?: $meeting->currentMinute;

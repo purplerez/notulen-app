@@ -19,9 +19,12 @@ class OrganizationKopController extends Controller
      */
     public function show(Request $request): View
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = $request->user();
-        /** @var Organization $organization */
+        if (! ($user instanceof User) || ! $user->organization) {
+            abort(403);
+        }
+
         $organization = $user->organization;
 
         Gate::authorize('view', $organization);
@@ -36,9 +39,12 @@ class OrganizationKopController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = $request->user();
-        /** @var Organization $organization */
+        if (! ($user instanceof User) || ! $user->organization) {
+            abort(403);
+        }
+
         $organization = $user->organization;
 
         Gate::authorize('update', $organization);
@@ -87,9 +93,12 @@ class OrganizationKopController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = $request->user();
-        /** @var Organization $organization */
+        if (! ($user instanceof User) || ! $user->organization) {
+            abort(403);
+        }
+
         $organization = $user->organization;
 
         Gate::authorize('update', $organization);
@@ -112,9 +121,12 @@ class OrganizationKopController extends Controller
      */
     public function preview(Request $request): StreamedResponse
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = $request->user();
-        /** @var Organization $organization */
+        if (! ($user instanceof User) || ! $user->organization) {
+            abort(403);
+        }
+
         $organization = $user->organization;
 
         Gate::authorize('view', $organization);
