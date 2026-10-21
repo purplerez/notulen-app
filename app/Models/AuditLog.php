@@ -144,6 +144,10 @@ class AuditLog extends Model
             'attendance_pdf_export' => 'Ekspor PDF Berita Acara',
             'kop_uploaded' => 'Unggah Kop Surat',
             'kop_deleted' => 'Penghapusan Kop Surat',
+            'link_create' => 'Pembuatan Tautan Berbagi',
+            'link_open' => 'Pembukaan Tautan Berbagi',
+            'link_revoke' => 'Pencabutan Tautan Berbagi',
+            'link_pdf_download' => 'Unduh PDF via Tautan Publik',
             default => str_replace('_', ' ', ucfirst($this->action)),
         };
     }

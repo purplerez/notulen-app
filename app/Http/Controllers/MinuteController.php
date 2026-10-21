@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActionItem;
+use App\Models\AuditLog;
 use App\Models\Meeting;
 use App\Models\Minute;
 use App\Models\MinuteAcknowledgement;
+use App\Models\ShareLink;
 use App\Support\Audit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class MinuteController extends Controller
@@ -70,6 +74,41 @@ class MinuteController extends Controller
         $canEditCurrent = Gate::allows('update', $minute);
         $canAcknowledge = Gate::allows('acknowledge', $minute);
 
+        $activeShareLink = $meeting->activeShareLink;
+        $recipients = collect();
+        $openedLogMap = collect();
+
+        if ($activeShareLink) {
+            $recipientsQuery = $meeting->attendees()
+                ->where(function ($q) {
+                    $q->whereNull('guest_status')->orWhere('guest_status', '!=', 'rejected');
+                });
+
+            if ($activeShareLink->recipients_scope === 'hadir') {
+                $recipientsQuery->where(function ($q) {
+                    $q->whereNotNull('checked_in_at')->orWhereIn('status', ['hadir', 'terlambat']);
+                });
+            }
+
+            $recipients = $recipientsQuery->orderBy('name')->get();
+
+            $openedLogs = AuditLog::where('meeting_id', $meeting->id)
+                ->where('action', 'link_open')
+                ->whereNotNull('metadata')
+                ->get();
+
+            foreach ($openedLogs as $log) {
+                if (isset($log->metadata['attendee_id'])) {
+                    $attId = $log->metadata['attendee_id'];
+                    if (! isset($openedLogMap[$attId]) || $log->created_at > $openedLogMap[$attId]) {
+                        $openedLogMap[$attId] = $log->created_at;
+                    }
+                }
+            }
+        }
+
+        $cachedPlainToken = session("share_token_{$meeting->id}");
+
         return view('minutes.show', [
             'meeting' => $meeting,
             'minute' => $minute,
@@ -81,6 +120,10 @@ class MinuteController extends Controller
             'canRevise' => $canRevise,
             'canEditCurrent' => $canEditCurrent,
             'canAcknowledge' => $canAcknowledge,
+            'activeShareLink' => $activeShareLink,
+            'recipients' => $recipients,
+            'openedLogMap' => $openedLogMap,
+            'cachedPlainToken' => $cachedPlainToken,
         ]);
     }
 
@@ -203,10 +246,15 @@ class MinuteController extends Controller
 
         $validated = $request->validate([
             'share_expires_at' => ['required', 'date', 'after:now'],
+            'access_mode' => ['nullable', 'in:phone,code'],
+            'recipients_scope' => ['nullable', 'in:hadir,semua_undangan'],
         ], [
             'share_expires_at.required' => 'Batas waktu baca peserta wajib ditentukan saat finalisasi notulen.',
             'share_expires_at.after' => 'Batas waktu baca peserta harus di masa depan.',
         ]);
+
+        $accessMode = $validated['access_mode'] ?? 'phone';
+        $recipientsScope = $validated['recipients_scope'] ?? 'semua_undangan';
 
         $meeting->update([
             'share_expires_at' => $validated['share_expires_at'],
@@ -217,12 +265,54 @@ class MinuteController extends Controller
             'finalized_at' => now(),
         ]);
 
+        // Create share link upon finalization
+        $plainToken = Str::random(64);
+        $tokenHash = hash('sha256', $plainToken);
+        $pin = null;
+        $codeHash = null;
+
+        if ($accessMode === 'code') {
+            $pin = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $codeHash = Hash::make($pin);
+        }
+
+        // Revoke any previous active link
+        $meeting->shareLinks()->whereNull('revoked_at')->update([
+            'revoked_at' => now(),
+        ]);
+
+        $shareLink = ShareLink::create([
+            'organization_id' => $meeting->organization_id,
+            'meeting_id' => $meeting->id,
+            'token_hash' => $tokenHash,
+            'access_mode' => $accessMode,
+            'code_hash' => $codeHash,
+            'recipients_scope' => $recipientsScope,
+            'expires_at' => $validated['share_expires_at'],
+            'created_by' => auth()->id(),
+        ]);
+
         Audit::record('minute_finalize', $meeting->id, [
             'minute_id' => $minute->id,
             'version' => $minute->version,
             'finalized_by' => auth()->id(),
             'share_expires_at' => $meeting->share_expires_at?->toIso8601String(),
         ]);
+
+        Audit::record('link_create', $meeting->id, [
+            'share_link_id' => $shareLink->id,
+            'access_mode' => $shareLink->access_mode,
+            'recipients_scope' => $shareLink->recipients_scope,
+            'expires_at' => $shareLink->expires_at->toIso8601String(),
+            'created_by' => auth()->id(),
+        ]);
+
+        session()->put("share_token_{$meeting->id}", $plainToken);
+        session()->flash('plain_share_token', $plainToken);
+        session()->flash('plain_share_url', route('public_share.show', ['token' => $plainToken]));
+        if ($pin !== null) {
+            session()->flash('plain_share_pin', $pin);
+        }
 
         return redirect()->route('meetings.minutes.show', ['meeting' => $meeting, 'v' => $minute->version])
             ->with('success', "Notulen versi {$minute->version} resmi difinalkan.");

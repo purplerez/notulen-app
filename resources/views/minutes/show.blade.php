@@ -1,5 +1,5 @@
 <x-layouts.app :title="'Notulen - ' . $meeting->title">
-    <div x-data="{ reviseModalOpen: false }" class="space-y-6">
+    <div x-data="{ reviseModalOpen: false, shareModalOpen: false, copied: false, clickedWa: {} }" class="space-y-6">
         <!-- Top Navigation -->
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
             <div>
@@ -324,6 +324,278 @@
                 </section>
             @endif
         </div>
+
+        <!-- Section: Distribusi & Tautan Berbagi Peserta -->
+        @if($minute->isFinal() && (auth()->user()->isNotulis() || auth()->user()->isAdmin()))
+            <div class="rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-2xs space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <span>🔗</span> Distribusi & Tautan Baca Peserta
+                        </h2>
+                        <p class="text-xs text-slate-500">
+                            Bagikan notulen final kepada peserta rapat melalui tautan aman dengan verifikasi WhatsApp atau PIN.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        @if($activeShareLink)
+                            <form method="POST" action="{{ route('meetings.share_links.revoke', ['meeting' => $meeting, 'shareLink' => $activeShareLink]) }}" onsubmit="return confirm('Apakah Anda yakin ingin mencabut tautan publik ini? Peserta tidak akan bisa lagi mengakses lewat tautan ini.');">
+                                @csrf
+                                <button
+                                    type="submit"
+                                    class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 transition cursor-pointer"
+                                >
+                                    <span>🚫 Cabut Tautan</span>
+                                </button>
+                            </form>
+                        @endif
+
+                        <button
+                            type="button"
+                            @click="shareModalOpen = true"
+                            class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 active:scale-[0.98] transition cursor-pointer"
+                        >
+                            <span>{{ $activeShareLink ? '🔄 Buat Ulang Tautan' : '+ Buat Tautan Berbagi' }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                @if(session('plain_share_token') || session('plain_share_pin'))
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900 space-y-2">
+                        <div class="flex items-center gap-1.5 font-bold">
+                            <span>🎉</span> Tautan Baca Publik Berhasil Dibuat!
+                        </div>
+                        @if(session('plain_share_pin'))
+                            <div class="p-2.5 bg-white rounded-lg border border-emerald-200 font-semibold">
+                                🔑 Kode PIN Akses: <strong class="text-base text-indigo-700 tracking-wider">{{ session('plain_share_pin') }}</strong>
+                                <span class="block text-[11px] text-slate-500 font-normal mt-0.5">Catat PIN ini dan bagikan kepada peserta. PIN hanya ditampilkan satu kali.</span>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                @if($activeShareLink)
+                    <!-- Active Link Information -->
+                    <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 font-bold text-emerald-800 text-[11px]">
+                                    🟢 Tautan Aktif
+                                </span>
+                                <span class="text-slate-600">
+                                    Mode: <strong>{{ $activeShareLink->access_mode === 'phone' ? 'Nomor WhatsApp' : 'PIN 6 Digit' }}</strong>
+                                </span>
+                                <span class="text-slate-400">•</span>
+                                <span class="text-slate-600">
+                                    Penerima: <strong>{{ $activeShareLink->recipients_scope === 'hadir' ? 'Peserta Hadir Saja' : 'Seluruh Undangan' }}</strong>
+                                </span>
+                            </div>
+
+                            <span class="text-slate-500 text-[11px]">
+                                Berlaku s.d. <strong>{{ $activeShareLink->expires_at->translatedFormat('d M Y H:i') }} WIB</strong> ({{ $activeShareLink->expires_at->diffForHumans() }})
+                            </span>
+                        </div>
+
+                        <!-- Copy Link Input -->
+                        @php
+                            $currentShareUrl = $cachedPlainToken ? route('public_share.show', ['token' => $cachedPlainToken]) : null;
+                        @endphp
+
+                        @if($currentShareUrl)
+                            <div class="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    readonly
+                                    x-ref="shareInput"
+                                    value="{{ $currentShareUrl }}"
+                                    class="block w-full min-h-[38px] rounded-xl border border-indigo-200 bg-white px-3 py-2 text-xs font-mono text-slate-700 shadow-2xs"
+                                />
+                                <button
+                                    type="button"
+                                    @click="navigator.clipboard.writeText($refs.shareInput.value); copied = true; setTimeout(() => copied = false, 2500)"
+                                    class="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl border border-indigo-300 bg-white px-3.5 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition cursor-pointer"
+                                >
+                                    <span x-show="!copied">📋 Salin Tautan</span>
+                                    <span x-show="copied" class="text-emerald-700 font-bold" style="display: none;">✅ Tersalin!</span>
+                                </button>
+                            </div>
+                        @else
+                            <p class="text-xs text-slate-500">
+                                ℹ️ Token rahasia tautan disimpan dalam format hash kriptografis demi keamanan. Tautan tetap aktif bagi peserta. Jika Anda belum menyalin atau ingin mendistribusikan ulang, silakan klik <strong>Buat Ulang Tautan</strong> di atas.
+                            </p>
+                        @endif
+                    </div>
+
+                    <!-- Recipients Table with wa.me buttons -->
+                    @if($recipients->isNotEmpty())
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700">
+                                    Daftar Penerima Notulen ({{ $recipients->count() }} orang)
+                                </h3>
+                                <span class="text-[11px] text-slate-400">
+                                    Status 'Dibuka' diperbarui otomatis saat peserta lolos gerbang
+                                </span>
+                            </div>
+
+                            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                                <table class="w-full text-left text-xs text-slate-700">
+                                    <thead class="bg-slate-50 text-[11px] font-bold uppercase text-slate-500 border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-4 py-3">Nama Peserta</th>
+                                            <th class="px-4 py-3">Jabatan</th>
+                                            <th class="px-4 py-3">Nomor WhatsApp</th>
+                                            <th class="px-4 py-3 text-center">Status Notulen</th>
+                                            <th class="px-4 py-3 text-right">Kirim Notulen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach($recipients as $rec)
+                                            @php
+                                                $cleanPhone = ltrim(\App\Support\PhoneNumber::normalize($rec->phone_e164), '+');
+                                                $linkTarget = $currentShareUrl ?? url('/n/[tautan-dibagikan]');
+                                                $waMessage = "Yth. " . $rec->name . ",\n\nBerikut tautan dokumen notulen resmi untuk rapat:\n*" . $meeting->title . "*\n\nSilakan buka tautan berikut untuk membaca dan mengunduh notulen:\n" . $linkTarget . "\n\nTerima kasih.";
+                                                $waUrl = "https://wa.me/{$cleanPhone}?text=" . rawurlencode($waMessage);
+                                                $hasOpened = isset($openedLogMap[$rec->id]);
+                                            @endphp
+                                            <tr class="hover:bg-slate-50/50">
+                                                <td class="px-4 py-3 font-semibold text-slate-900">
+                                                    {{ $rec->name }}
+                                                    @if($rec->is_guest)
+                                                        <span class="text-[10px] text-slate-400 font-normal">(Tamu)</span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-slate-600">{{ $rec->position ?: '-' }}</td>
+                                                <td class="px-4 py-3 font-mono text-slate-600">+{{ $rec->phone_e164 }}</td>
+                                                <td class="px-4 py-3 text-center">
+                                                    @if($hasOpened)
+                                                        <span class="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-800 ring-1 ring-emerald-600/20">
+                                                            <span>👁️</span>
+                                                            <span>Dibuka ({{ \Carbon\Carbon::parse($openedLogMap[$rec->id])->translatedFormat('d M H:i') }})</span>
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                                                            Belum Dibuka
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-right">
+                                                    <div class="flex items-center justify-end gap-1.5">
+                                                        <span
+                                                            x-show="clickedWa[{{ $rec->id }}]"
+                                                            class="text-[10px] text-emerald-600 font-medium"
+                                                            style="display: none;"
+                                                        >
+                                                            ✓ Sudah Diklik
+                                                        </span>
+                                                        <a
+                                                            href="{{ $waUrl }}"
+                                                            target="_blank"
+                                                            @click="clickedWa[{{ $rec->id }}] = true"
+                                                            class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition"
+                                                        >
+                                                            <span>💬</span>
+                                                            <span>Kirim WA</span>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p class="text-[11px] text-slate-400 italic pt-1">
+                                ℹ️ Catatan: Tombol 'Kirim WA' membuka obrolan WhatsApp di aplikasi Anda. Status 'Sudah Diklik' hanya penanda interaksi lokal; sistem tidak dapat memastikan pesan terkirim secara eksternal. Status 'Dibuka' diperbarui saat penerima sukses memverifikasi akses.
+                            </p>
+                        </div>
+                    @endif
+                @else
+                    <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center space-y-2">
+                        <span class="text-2xl">🔗</span>
+                        <h3 class="text-xs font-bold text-slate-700">Belum Ada Tautan Publik yang Aktif</h3>
+                        <p class="text-[11px] text-slate-500 max-w-sm mx-auto">
+                            Buat tautan baca peserta agar notulen final dapat diakses oleh pihak yang berhak melalui verifikasi nomor WhatsApp atau PIN.
+                        </p>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Share Link Creation Modal -->
+            <div
+                x-show="shareModalOpen"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs"
+                style="display: none;"
+            >
+                <div
+                    @click.away="shareModalOpen = false"
+                    class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4"
+                >
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="text-base font-bold text-slate-900">Buat Tautan Berbagi Peserta</h3>
+                        <button type="button" @click="shareModalOpen = false" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+                    </div>
+
+                    <form method="POST" action="{{ route('meetings.share_links.store', $meeting) }}" class="space-y-4">
+                        @csrf
+
+                        <div class="space-y-1.5">
+                            <label for="modal_access_mode" class="block text-xs font-bold text-slate-700">Mode Gerbang Akses <span class="text-rose-500">*</span></label>
+                            <select
+                                id="modal_access_mode"
+                                name="access_mode"
+                                class="block w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                            >
+                                <option value="phone" selected>Nomor WhatsApp (Peserta mengetik no WA terdaftar)</option>
+                                <option value="code">Kode PIN 6 Digit (PIN acak rahasia yang dibagikan)</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="modal_recipients_scope" class="block text-xs font-bold text-slate-700">Cakupan Penerima <span class="text-rose-500">*</span></label>
+                            <select
+                                id="modal_recipients_scope"
+                                name="recipients_scope"
+                                class="block w-full rounded-xl border border-slate-300 bg-white p-2.5 text-xs shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                            >
+                                <option value="semua_undangan" selected>Seluruh Undangan Rapat</option>
+                                <option value="hadir">Peserta yang Hadir Saja</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="modal_expires_at" class="block text-xs font-bold text-slate-700">Masa Berlaku Tautan <span class="text-rose-500">*</span></label>
+                            <input
+                                type="datetime-local"
+                                id="modal_expires_at"
+                                name="expires_at"
+                                required
+                                min="{{ now()->addHour()->format('Y-m-d\TH:i') }}"
+                                value="{{ old('expires_at', $meeting->share_expires_at ? \Carbon\Carbon::parse($meeting->share_expires_at)->format('Y-m-d\TH:i') : now()->addDays(7)->format('Y-m-d\TH:i')) }}"
+                                class="block w-full rounded-xl border border-slate-300 p-2.5 text-xs shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                            />
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                @click="shareModalOpen = false"
+                                class="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="submit"
+                                class="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700"
+                            >
+                                Simpan & Buat Tautan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
 
         <!-- Revision Modal -->
         <div

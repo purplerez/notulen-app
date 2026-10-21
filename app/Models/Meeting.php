@@ -220,6 +220,29 @@ class Meeting extends Model
     }
 
     /**
+     * The public share links generated for this meeting.
+     *
+     * @return HasMany<ShareLink, $this>
+     */
+    public function shareLinks(): HasMany
+    {
+        return $this->hasMany(ShareLink::class)->latest('id');
+    }
+
+    /**
+     * The currently active share link for this meeting (if any).
+     *
+     * @return HasOne<ShareLink, $this>
+     */
+    public function activeShareLink(): HasOne
+    {
+        return $this->hasOne(ShareLink::class)
+            ->whereNull('revoked_at')
+            ->where('expires_at', '>', now())
+            ->latestOfMany();
+    }
+
+    /**
      * Determine whether the meeting minutes are finalized.
      */
     public function isMinutesFinal(): bool

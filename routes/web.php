@@ -11,7 +11,9 @@ use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MeetingPdfController;
 use App\Http\Controllers\MinuteController;
 use App\Http\Controllers\OrganizationKopController;
+use App\Http\Controllers\PublicShareController;
 use App\Http\Controllers\RecordingController;
+use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\TranscriptController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +26,11 @@ Route::get('/', function () {
 // Public check-in route for participants (/c/{meeting}?code=...)
 Route::get('/c/{meeting}', [CheckinController::class, 'show'])->name('checkin.show');
 Route::post('/c/{meeting}', [CheckinController::class, 'store'])->name('checkin.store');
+
+// Public share link routes for meeting minutes (/n/{token})
+Route::get('/n/{token}', [PublicShareController::class, 'show'])->name('public_share.show');
+Route::post('/n/{token}/verify', [PublicShareController::class, 'verify'])->name('public_share.verify');
+Route::get('/n/{token}/pdf', [PublicShareController::class, 'pdf'])->name('public_share.pdf');
 
 // Guest routes
 Route::middleware('guest')->group(function () {
@@ -88,6 +95,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/meetings/{meeting}/minutes/finalize', [MinuteController::class, 'finalize'])->name('meetings.minutes.finalize');
     Route::post('/meetings/{meeting}/minutes/revise', [MinuteController::class, 'revise'])->name('meetings.minutes.revise');
     Route::post('/meetings/{meeting}/minutes/{minute}/acknowledge', [MinuteController::class, 'acknowledge'])->name('meetings.minutes.acknowledge');
+
+    // Public share links management
+    Route::post('/meetings/{meeting}/share-links', [ShareLinkController::class, 'store'])->name('meetings.share_links.store');
+    Route::post('/meetings/{meeting}/share-links/{shareLink}/revoke', [ShareLinkController::class, 'revoke'])->name('meetings.share_links.revoke');
 
     // Organization Kop management & preview
     Route::get('/organization/kop', [OrganizationKopController::class, 'show'])->name('organization.kop.show');

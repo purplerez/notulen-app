@@ -401,8 +401,33 @@
                             class="block w-full rounded-lg border border-amber-300 bg-white p-2.5 text-xs text-slate-900 shadow-2xs focus:ring-2 focus:ring-amber-600"
                         />
                         <p class="text-[11px] text-amber-700 leading-normal">
-                            Tentukan batas akhir masa berlaku tautan publik bagi peserta untuk mengakses dan mengunduh notulen ini.
+                            Tentukan batas akhir masa berlaku tautan publik bagi peserta untuk mengakses notulen ini.
                         </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="space-y-1">
+                            <label for="access_mode" class="block font-bold text-slate-700">Mode Gerbang Akses</label>
+                            <select
+                                id="access_mode"
+                                name="access_mode"
+                                class="block w-full rounded-xl border border-slate-300 bg-white p-2 text-xs shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                            >
+                                <option value="phone" selected>Nomor WhatsApp</option>
+                                <option value="code">Kode PIN 6 Digit</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label for="recipients_scope" class="block font-bold text-slate-700">Cakupan Penerima</label>
+                            <select
+                                id="recipients_scope"
+                                name="recipients_scope"
+                                class="block w-full rounded-xl border border-slate-300 bg-white p-2 text-xs shadow-2xs focus:ring-2 focus:ring-indigo-600"
+                            >
+                                <option value="semua_undangan" selected>Semua Undangan</option>
+                                <option value="hadir">Peserta Hadir Saja</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-end gap-2 pt-2">

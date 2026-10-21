@@ -143,4 +143,17 @@ class MeetingPolicy
     {
         return app(MinutePolicy::class)->revise($user, $meeting);
     }
+
+    /**
+     * Determine whether the user can manage public share links for the meeting.
+     * Restricted strictly to the Notulis creator of the meeting within the same tenant.
+     */
+    public function manageShareLinks(User $user, Meeting $meeting): bool
+    {
+        if ((int) $user->organization_id !== (int) $meeting->organization_id) {
+            return false;
+        }
+
+        return $user->isNotulis() && (int) $meeting->created_by === (int) $user->id;
+    }
 }

@@ -185,3 +185,40 @@ Aplikasi menjalankan dua perintah terjadwal harian:
 > 1. Konfigurasikan retensi rotasi backup storage disk lokal/S3 (`storage/app/private/orgs/*/meetings/*`) dengan batas retensi $\le$ 30 hari.
 > 2. Atau buat aturan pengecualian (exclude filter) pada backup berkas harian agar direktori audio rapat yang `audio_deleted_at`-nya telah terisi tidak disertakan dalam snapshot cadangan jangka panjang.
 
+---
+
+## 8. Keamanan Distribusi Tautan Publik (`/n/{token}`) & Mode Akses
+
+Sesuai rancangan Bagian 8.6 dan 10 serta keputusan distribusi, tautan baca publik disajikan dengan kontrol ketat:
+
+### 8.1 Zero-Knowledge Token Storage
+- Tautan menggunakan token acak berentropi tinggi (64 karakter acak).
+- Database **hanya menyimpan hash SHA-256** dari token (`token_hash`), sehingga kebocoran basis data tidak memungkinkan rekonstruksi token asli.
+- Nomor ID rapat (`meeting_id`) sama sekali tidak ditampilkan pada URL publik.
+
+### 8.2 Evaluasi Keamanan: Nomor WhatsApp vs Mode Kode (PIN)
+> [!IMPORTANT]
+> **Nomor WhatsApp Bukan Bukti Identitas Kriptografis**:
+> Verifikasi berbasis nomor WhatsApp memudahkan distribusi bagi peserta rapat umum, namun **bukan merupakan pembuktian identitas yang tak terbantahkan**. Jika seseorang di luar rapat berhasil menebak nomor WhatsApp peserta yang hadir, ia dapat melewati gerbang verifikasi.
+>
+> **Rekomendasi Operasional**:
+> - **Rapat Umum / Internal Terbuka**: Gunakan **Mode WhatsApp** (`phone`) dengan cakupan `hadir` atau `semua_undangan`.
+> - **Rapat Khusus / Terbatas / Berklasifikasi Sensitif**: **Wajib gunakan Mode Kode (PIN 6-Digit)** (`code`). PIN acak 6 digit diberikan langsung kepada notulis satu kali saat pembuatan tautan dan harus didistribusikan secara terpisah (misal dibacakan saat rapat atau dikirim via kanal komunikasi terenkripsi terpisah).
+
+### 8.3 Mitigasi Brute Force & Anti-Enumeration
+1. **Rate Limiting**: Dibatasi maksimal 10 percobaan verifikasi per menit per alamat IP.
+2. **Penguncian Tautan Otomatis**: Jika terjadi 5 kali kegagalan verifikasi berturut-turut pada suatu tautan, tautan dikunci sementara selama 15 menit (`locked_until`).
+3. **Pesan Galat Seragam**: Semua kegagalan validasi (baik nomor salah, nomor tidak terdaftar dalam cakupan peserta, atau PIN salah) menghasilkan respons galat yang identik (*uniform message*):
+   `"Nomor WhatsApp atau kode akses tidak sesuai atau tidak memiliki izin akses."`
+   Hal ini mencegah penyerang melakukan *user enumeration* terhadap daftar peserta rapat.
+
+### 8.4 Pencegahan Kebocoran via Crawler & Pratinjau Tautan
+1. **Open Graph Metadata**: Halaman gerbang `/n/{token}` memiliki tag Open Graph generik (`og:title="Notulen Rapat"` dan `og:description="Silakan masukkan verifikasi untuk membaca notulen resmi."`). Judul rapat, tanggal, maupun agenda **tidak pernah diekspos** ke bot unfurl/preview WhatsApp.
+2. **Bukan Sekali Pakai (Not Single-Use)**: Tautan publik tidak hangus pada akses pertama, agar bot crawler pratinjau tautan WhatsApp/Telegram tidak menghabiskan akses sebelum dibuka oleh pengguna sebenarnya.
+3. **Pemberian Akses Berbasis Sesi**: Setelah lolos gerbang, token verifikasi disimpan di sesi peramban (`session`). Unduhan PDF via `/n/{token}/pdf` hanya diizinkan untuk sesi yang telah lolos verifikasi.
+
+### 8.5 Isolasi Bahan Mentah (Zero-Exposure Audio & Transkrip)
+- Antarmuka publik `/n/{token}` dan berkas PDF publik **sama sekali tidak memuat tautan, pemutar, maupun cuplikan rekaman audio mentah/gabungan dan transkrip mentah**.
+- Hak akses materi mentah tetap eksklusif hanya untuk notulis pembuat rapat dan pimpinan organisasi.
+
+
