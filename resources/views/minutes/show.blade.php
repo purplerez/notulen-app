@@ -182,19 +182,32 @@
             </div>
         @endif
 
-        <!-- Action Bar: Revise Button (for creator notulis or admin) -->
-        @if($minute->isFinal() && $canRevise && ! $draftRevision)
-            <div class="flex justify-end">
-                <button
-                    type="button"
-                    @click="reviseModalOpen = true"
-                    class="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition cursor-pointer"
+        <!-- Action Bar: PDF Download & Revise Button -->
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <a
+                    href="{{ route('meetings.minutes.version.pdf', ['meeting' => $meeting, 'minute' => $minute]) }}"
+                    target="_blank"
+                    class="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 transition"
                 >
-                    <span>📝</span>
-                    <span>Revisi Notulen (Buat Versi {{ $minute->version + 1 }})</span>
-                </button>
+                    <span>📄</span>
+                    <span>Cetak / Unduh PDF</span>
+                </a>
             </div>
-        @endif
+
+            @if($minute->isFinal() && $canRevise && ! $draftRevision)
+                <div>
+                    <button
+                        type="button"
+                        @click="reviseModalOpen = true"
+                        class="inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition cursor-pointer"
+                    >
+                        <span>📝</span>
+                        <span>Revisi Notulen (Buat Versi {{ $minute->version + 1 }})</span>
+                    </button>
+                </div>
+            @endif
+        </div>
 
         <!-- Main Minutes Content Body -->
         <div class="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-2xs space-y-8">

@@ -8,7 +8,9 @@ use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MeetingAttendeeController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\MeetingPdfController;
 use App\Http\Controllers\MinuteController;
+use App\Http\Controllers\OrganizationKopController;
 use App\Http\Controllers\RecordingController;
 use App\Http\Controllers\TranscriptController;
 use App\Http\Controllers\UserController;
@@ -86,4 +88,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/meetings/{meeting}/minutes/finalize', [MinuteController::class, 'finalize'])->name('meetings.minutes.finalize');
     Route::post('/meetings/{meeting}/minutes/revise', [MinuteController::class, 'revise'])->name('meetings.minutes.revise');
     Route::post('/meetings/{meeting}/minutes/{minute}/acknowledge', [MinuteController::class, 'acknowledge'])->name('meetings.minutes.acknowledge');
+
+    // Organization Kop management & preview
+    Route::get('/organization/kop', [OrganizationKopController::class, 'show'])->name('organization.kop.show');
+    Route::post('/organization/kop', [OrganizationKopController::class, 'update'])->name('organization.kop.update');
+    Route::delete('/organization/kop', [OrganizationKopController::class, 'destroy'])->name('organization.kop.destroy');
+    Route::get('/organization/kop/preview', [OrganizationKopController::class, 'preview'])->name('organization.kop.preview');
+
+    // PDF generation (Minutes & Attendance Recap)
+    Route::get('/meetings/{meeting}/minutes/pdf', [MeetingPdfController::class, 'minute'])->name('meetings.minutes.pdf');
+    Route::get('/meetings/{meeting}/minutes/{minute}/pdf', [MeetingPdfController::class, 'minute'])->name('meetings.minutes.version.pdf');
+    Route::get('/meetings/{meeting}/attendance/pdf', [MeetingPdfController::class, 'attendanceRecap'])->name('meetings.attendance.pdf');
 });

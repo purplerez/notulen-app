@@ -66,6 +66,15 @@
                 >
                     <span>📜 Lihat Log Akses</span>
                 </a>
+
+                @if($organization && $user->can('update', $organization))
+                    <a
+                        href="{{ route('organization.kop.show') }}"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+                    >
+                        <span>🏢 Atur Kop Surat</span>
+                    </a>
+                @endif
             </div>
         </div>
 

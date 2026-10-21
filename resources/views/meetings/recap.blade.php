@@ -13,6 +13,14 @@
             </div>
 
             <div class="flex items-center gap-2">
+                <a
+                    href="{{ route('meetings.attendance.pdf', $meeting) }}"
+                    target="_blank"
+                    class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 transition"
+                >
+                    <span>📄</span>
+                    <span>Unduh PDF</span>
+                </a>
                 <button
                     type="button"
                     onclick="window.print()"

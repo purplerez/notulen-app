@@ -140,6 +140,10 @@ class AuditLog extends Model
             'stt_waiting_quota' => 'Menunggu Kuota STT',
             'stt_failed' => 'Kegagalan STT',
             'stt_retry_manual' => 'Coba Ulang Transkripsi',
+            'minute_pdf_export' => 'Ekspor PDF Notulen',
+            'attendance_pdf_export' => 'Ekspor PDF Berita Acara',
+            'kop_uploaded' => 'Unggah Kop Surat',
+            'kop_deleted' => 'Penghapusan Kop Surat',
             default => str_replace('_', ' ', ucfirst($this->action)),
         };
     }
