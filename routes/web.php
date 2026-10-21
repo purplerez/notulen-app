@@ -28,18 +28,31 @@ Route::get('/', function () {
 });
 
 // Public check-in route for participants (/c/{meeting}?code=...)
-Route::get('/c/{meeting}', [CheckinController::class, 'show'])->name('checkin.show');
-Route::post('/c/{meeting}', [CheckinController::class, 'store'])->name('checkin.store');
+Route::get('/c/{meeting}', [CheckinController::class, 'show'])
+    ->name('checkin.show')
+    ->middleware('throttle:60,1');
+Route::post('/c/{meeting}', [CheckinController::class, 'store'])
+    ->name('checkin.store')
+    ->middleware('throttle:30,1');
 
 // Public share link routes for meeting minutes (/n/{token})
-Route::get('/n/{token}', [PublicShareController::class, 'show'])->name('public_share.show');
-Route::post('/n/{token}/verify', [PublicShareController::class, 'verify'])->name('public_share.verify');
-Route::get('/n/{token}/pdf', [PublicShareController::class, 'pdf'])->name('public_share.pdf');
+Route::get('/n/{token}', [PublicShareController::class, 'show'])
+    ->name('public_share.show')
+    ->middleware('throttle:60,1');
+Route::post('/n/{token}/verify', [PublicShareController::class, 'verify'])
+    ->name('public_share.verify')
+    ->middleware('throttle:30,1');
+Route::get('/n/{token}/pdf', [PublicShareController::class, 'pdf'])
+    ->name('public_share.pdf')
+    ->middleware('throttle:30,1');
 
 // Guest routes
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/login', [LoginController::class, 'showLoginForm'])
+        ->name('login')
+        ->middleware('throttle:30,1');
+    Route::post('/login', [LoginController::class, 'login'])
+        ->middleware('throttle:10,1');
 });
 
 // Authenticated tenant routes
@@ -120,13 +133,21 @@ Route::middleware('auth')->group(function () {
 Route::prefix('platform')->group(function () {
     // Guest platform routes
     Route::middleware('guest:platform')->group(function () {
-        Route::get('/login', [PlatformAuthController::class, 'showLoginForm'])->name('platform.login');
-        Route::post('/login', [PlatformAuthController::class, 'login'])->name('platform.login.submit');
+        Route::get('/login', [PlatformAuthController::class, 'showLoginForm'])
+            ->name('platform.login')
+            ->middleware('throttle:30,1');
+        Route::post('/login', [PlatformAuthController::class, 'login'])
+            ->name('platform.login.submit')
+            ->middleware('throttle:10,1');
     });
 
     // 2FA Verification (during pre-auth or initial setup)
-    Route::get('/verify-2fa', [PlatformAuthController::class, 'show2faForm'])->name('platform.verify_2fa');
-    Route::post('/verify-2fa', [PlatformAuthController::class, 'verify2fa'])->name('platform.verify_2fa.submit');
+    Route::get('/verify-2fa', [PlatformAuthController::class, 'show2faForm'])
+        ->name('platform.verify_2fa')
+        ->middleware('throttle:30,1');
+    Route::post('/verify-2fa', [PlatformAuthController::class, 'verify2fa'])
+        ->name('platform.verify_2fa.submit')
+        ->middleware('throttle:10,1');
 
     // Authenticated & 2FA-verified platform routes
     Route::middleware(['auth:platform', 'platform.2fa'])->group(function () {

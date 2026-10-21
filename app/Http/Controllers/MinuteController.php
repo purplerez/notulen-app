@@ -137,7 +137,7 @@ class MinuteController extends Controller
         /** @var Minute|null $minute */
         $minute = $versionParam
             ? $meeting->minutes()->where('version', (int) $versionParam)->where('status', 'draft')->first()
-            : $meeting->minutes()->where('status', 'draft')->latest('version')->first();
+            : $meeting->minutes()->where('status', 'draft')->reorder('version', 'desc')->first();
 
         if (! $minute) {
             abort(404, 'Tidak ada draf notulen yang dapat disunting untuk rapat ini.');
@@ -164,7 +164,7 @@ class MinuteController extends Controller
         $minuteId = $request->input('minute_id');
         $minute = $minuteId
             ? $meeting->minutes()->where('status', 'draft')->findOrFail($minuteId)
-            : $meeting->minutes()->where('status', 'draft')->latest('version')->firstOrFail();
+            : $meeting->minutes()->where('status', 'draft')->reorder('version', 'desc')->firstOrFail();
 
         $this->authorize('update', $minute);
 
@@ -240,7 +240,7 @@ class MinuteController extends Controller
         $minuteId = $request->input('minute_id');
         $minute = $minuteId
             ? $meeting->minutes()->where('status', 'draft')->findOrFail($minuteId)
-            : $meeting->minutes()->where('status', 'draft')->latest('version')->firstOrFail();
+            : $meeting->minutes()->where('status', 'draft')->reorder('version', 'desc')->firstOrFail();
 
         $this->authorize('finalize', $minute);
 

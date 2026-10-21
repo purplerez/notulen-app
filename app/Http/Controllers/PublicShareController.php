@@ -65,7 +65,7 @@ class PublicShareController extends Controller
             $minute = $meeting->minutes()
                 ->withoutGlobalScopes()
                 ->where('status', 'final')
-                ->latest('version')
+                ->reorder('version', 'desc')
                 ->first();
 
             if (! $minute) {
@@ -236,7 +236,7 @@ class PublicShareController extends Controller
         $minute = $meeting->minutes()
             ->withoutGlobalScopes()
             ->where('status', 'final')
-            ->latest('version')
+            ->reorder('version', 'desc')
             ->firstOrFail();
 
         $minute->load(['actionItems']);
