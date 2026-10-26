@@ -137,6 +137,10 @@ class MinuteEditingAndFinalizationTest extends TestCase
 
         $response->assertRedirect(route('meetings.minutes.show', ['meeting' => $this->meeting, 'v' => 1]));
 
+        $showResponse = $this->actingAs($this->creatorNotulis)
+            ->get(route('meetings.minutes.show', ['meeting' => $this->meeting, 'v' => 1]));
+        $showResponse->assertOk();
+
         $this->draftMinute->refresh();
         $this->assertSame('final', $this->draftMinute->status);
         $this->assertNotNull($this->draftMinute->finalized_at);

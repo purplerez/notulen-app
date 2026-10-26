@@ -40,6 +40,7 @@ class Audit
             'actor_attendee_id' => $actorAttendeeId,
             'action' => $action,
             'meta' => ! empty($meta) ? $meta : null,
+            'created_at' => now(),
         ]);
     }
 }

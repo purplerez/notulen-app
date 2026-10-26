@@ -107,10 +107,23 @@
                     </audio>
                 </div>
             </div>
-        @else
+        @elseif($meeting->audio_deleted_at !== null)
             <div class="rounded-xl bg-slate-100 p-3 text-xs text-slate-600 border border-slate-200 flex items-center justify-between">
                 <span>🔇 Audio rekaman telah dihapus sesuai retensi 1 bulan. Menampilkan teks transkrip saja.</span>
                 <span class="text-[11px] text-slate-500">Transkrip teks tetap tersedia</span>
+            </div>
+        @elseif($meeting->status === 'transcribing')
+            <div class="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 border border-amber-200 flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                    <span class="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span>⏳ Audio rapat sedang dalam antrean transkripsi & pemrosesan.</span>
+                </span>
+                <span class="text-[11px] text-amber-700">Teks akan muncul setelah worker antrean berjalan</span>
+            </div>
+        @else
+            <div class="rounded-xl bg-slate-50 p-3 text-xs text-slate-600 border border-slate-200 flex items-center justify-between">
+                <span>🎧 Pemutar audio gabungan belum aktif (memerlukan ffmpeg di server). Transkrip teks hasil rekaman tetap tersimpan lengkap di bawah.</span>
+                <span class="text-[11px] text-slate-500">Transkrip Lengkap</span>
             </div>
         @endif
 

@@ -65,5 +65,23 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('stt', function () {
             return Limit::perMinute((int) config('stt.rpm_limit', 18));
         });
+
+        // Automatically clean up orphaned Vite 'hot' file if dev server is offline
+        if ($this->app->environment('local')) {
+            $hotPath = public_path('hot');
+            if (is_file($hotPath)) {
+                $hotUrl = trim((string) @file_get_contents($hotPath));
+                $parts = parse_url($hotUrl);
+                $host = $parts['host'] ?? '127.0.0.1';
+                $port = (int) ($parts['port'] ?? 5173);
+                $checkHost = in_array($host, ['localhost', '127.0.0.1', 'notulen-app.test'], true) ? '127.0.0.1' : $host;
+                $socket = @fsockopen($checkHost, $port, $errno, $errstr, 0.05);
+                if ($socket) {
+                    fclose($socket);
+                } else {
+                    @unlink($hotPath);
+                }
+            }
+        }
     }
 }

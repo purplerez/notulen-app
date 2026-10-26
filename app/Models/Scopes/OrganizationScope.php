@@ -14,6 +14,11 @@ class OrganizationScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
+        // Prevent infinite recursion during authentication when the User itself is being resolved from session
+        if ($model instanceof User && ! auth()->hasUser()) {
+            return;
+        }
+
         $user = auth()->user();
 
         // Scope applies only when an authenticated User (tenant user) is present.

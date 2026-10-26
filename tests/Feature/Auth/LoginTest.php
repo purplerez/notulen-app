@@ -36,6 +36,10 @@ class LoginTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect('/dashboard');
+
+        // Verify session retrieval and organization scoping work seamlessly
+        $dashboardResponse = $this->get('/dashboard');
+        $dashboardResponse->assertStatus(200);
     }
 
     public function test_inactive_users_cannot_authenticate(): void

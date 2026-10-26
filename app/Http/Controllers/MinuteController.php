@@ -94,12 +94,12 @@ class MinuteController extends Controller
 
             $openedLogs = AuditLog::where('meeting_id', $meeting->id)
                 ->where('action', 'link_open')
-                ->whereNotNull('metadata')
+                ->whereNotNull('meta')
                 ->get();
 
             foreach ($openedLogs as $log) {
-                if (isset($log->metadata['attendee_id'])) {
-                    $attId = $log->metadata['attendee_id'];
+                if (is_array($log->meta) && isset($log->meta['attendee_id'])) {
+                    $attId = $log->meta['attendee_id'];
                     if (! isset($openedLogMap[$attId]) || $log->created_at > $openedLogMap[$attId]) {
                         $openedLogMap[$attId] = $log->created_at;
                     }

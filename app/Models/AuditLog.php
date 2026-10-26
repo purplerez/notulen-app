@@ -6,8 +6,19 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use LogicException;
 
+/**
+ * @property int $id
+ * @property int $organization_id
+ * @property int|null $meeting_id
+ * @property int|null $actor_user_id
+ * @property int|null $actor_attendee_id
+ * @property string $action
+ * @property array<string, mixed>|null $meta
+ * @property Carbon $created_at
+ */
 class AuditLog extends Model
 {
     use BelongsToOrganization, HasFactory;
