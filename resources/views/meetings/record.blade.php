@@ -8,12 +8,16 @@
                 upload: '{{ route('meetings.record.segments', $meeting) }}',
                 finish: '{{ route('meetings.record.finish', $meeting) }}'
             },
-            maxDurationMinutes: {{ $maxDurationMinutes }}
+            maxDurationMinutes: {{ $maxDurationMinutes }},
+            initialAvailableQuotaMinutes: {{ $availableQuotaMinutes }},
+            gracePeriodMinutes: {{ $gracePeriodMinutes }},
+            quotaStatusUrl: '{{ route('quota.status') }}',
+            quotaBuyUrl: '{{ route('quota.index') }}'
         })"
-        class="space-y-6 max-w-lg mx-auto"
+        class="space-y-6 max-w-lg mx-auto relative"
     >
         <!-- Header & Nav -->
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-2">
             <div>
                 <a href="{{ route('meetings.show', $meeting) }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
                     <span>←</span> Kembali ke Rapat
@@ -21,28 +25,101 @@
                 <h1 class="text-lg font-bold tracking-tight text-slate-900 sm:text-xl mt-1">
                     Perekaman Audio Rapat
                 </h1>
-                <p class="text-xs text-slate-500 truncate max-w-[280px] sm:max-w-md">
+                <p class="text-xs text-slate-500 truncate max-w-[200px] sm:max-w-xs">
                     {{ $meeting->title }}
                 </p>
             </div>
 
-            <!-- Online / Offline Badge -->
-            <div>
-                <span
-                    x-show="isOnline"
-                    class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20"
+            <!-- Badges: Quota & Online/Offline -->
+            <div class="flex flex-col items-end gap-1.5">
+                <!-- Quota Pill -->
+                <div class="flex items-center gap-1.5">
+                    <button
+                        @click="showTopUpModal = true"
+                        type="button"
+                        class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition"
+                        :class="inGracePeriod ? 'bg-rose-100 text-rose-800 border border-rose-300' : (availableQuotaMinutes <= 15 ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200')"
+                    >
+                        <span>⏱️</span>
+                        <span x-text="inGracePeriod ? 'Tenggang: ' + formattedGraceLeft : 'Sisa: ' + availableQuotaMinutes + ' m'"></span>
+                        <span class="text-indigo-600 underline text-[10px] ml-0.5">+Top-up</span>
+                    </button>
+                </div>
+
+                <!-- Online / Offline Badge -->
+                <div>
+                    <span
+                        x-show="isOnline"
+                        class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/20"
+                    >
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Online
+                    </span>
+                    <span
+                        x-show="!isOnline"
+                        x-cloak
+                        class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-600/20"
+                    >
+                        <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                        Offline
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Early Quota Warning Banner (<= 15 mins) -->
+        <div
+            x-show="!inGracePeriod && availableQuotaMinutes > 0 && availableQuotaMinutes <= 15"
+            x-cloak
+            class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 flex items-center justify-between gap-3 shadow-2xs"
+        >
+            <div class="space-y-0.5">
+                <div class="font-bold flex items-center gap-1.5 text-amber-900">
+                    <span>⚠️</span> Peringatan: Kuota Rekam Tersisa <span x-text="availableQuotaMinutes"></span> Menit
+                </div>
+                <p class="text-amber-800">
+                    Rekaman tetap berjalan normal. Anda disarankan menambah kuota sekarang agar rapat dapat berlanjut tanpa jeda.
+                </p>
+            </div>
+            <button
+                @click="showTopUpModal = true"
+                type="button"
+                class="shrink-0 rounded-xl bg-amber-600 px-3 py-1.5 font-bold text-white shadow-2xs hover:bg-amber-700 transition"
+            >
+                + Tambah Kuota
+            </button>
+        </div>
+
+        <!-- Grace Period Urgent Banner (Quota 0, 15m Buffer Active) -->
+        <div
+            x-show="inGracePeriod"
+            x-cloak
+            class="rounded-2xl border-2 border-rose-400 bg-rose-50 p-4 text-xs text-rose-950 space-y-2 shadow-sm animate-pulse"
+        >
+            <div class="flex items-center justify-between">
+                <div class="font-bold flex items-center gap-1.5 text-rose-900 text-sm">
+                    <span>⏰</span> Masa Toleransi Darurat Aktif!
+                </div>
+                <span class="font-mono font-bold text-base text-rose-700 bg-white px-2.5 py-0.5 rounded-lg border border-rose-200" x-text="formattedGraceLeft"></span>
+            </div>
+            <p class="text-rose-800 leading-relaxed">
+                Kuota resmi organisasi telah habis, namun audio <strong>TETAP MEREKAM NORMAL</strong> selama masa tenggang 15 menit agar pembicaraan penting tidak terputus. Silakan selesaikan perpanjangan kuota sebelum waktu tenggang habis.
+            </p>
+            <div class="flex items-center gap-2 pt-1">
+                <button
+                    @click="showTopUpModal = true"
+                    type="button"
+                    class="rounded-xl bg-rose-600 px-3.5 py-1.5 font-bold text-white shadow-2xs hover:bg-rose-700 transition text-xs"
                 >
-                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Online
-                </span>
-                <span
-                    x-show="!isOnline"
-                    x-cloak
-                    class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-600/20"
+                    ⚡ Beli Kuota Sekarang
+                </button>
+                <button
+                    @click="checkQuota()"
+                    type="button"
+                    class="rounded-xl border border-rose-300 bg-white px-3 py-1.5 font-semibold text-rose-700 hover:bg-rose-50 transition text-xs"
                 >
-                    <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
-                    Offline (Tersimpan Lokal)
-                </span>
+                    🔄 Cek Pembayaran
+                </button>
             </div>
         </div>
 
@@ -245,6 +322,77 @@
                 <li>Jauhkan dari sumber bising konstan seperti kipas angin, pendingin ruangan (AC), atau laptop berisik.</li>
                 <li>Sangat disarankan mengaktifkan mode <strong>Jangan Ganggu (Do Not Disturb / DND)</strong> agar panggilan telepon masuk tidak menginterupsi rekaman.</li>
             </ul>
+        </div>
+
+        <!-- Quick Top-Up In-Session Modal (Non-Blocking) -->
+        <div
+            x-show="showTopUpModal"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+            @keydown.escape.window="showTopUpModal = false"
+        >
+            <div
+                @click.away="showTopUpModal = false"
+                class="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-5"
+            >
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Top-Up Cepat</span>
+                        <h3 class="text-lg font-bold text-slate-900 mt-1">Perpanjang Kuota Rekam</h3>
+                        <p class="text-xs text-slate-500">Audio Anda tetap merekam di latar belakang saat jendela ini terbuka.</p>
+                    </div>
+                    <button
+                        @click="showTopUpModal = false"
+                        type="button"
+                        class="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Sisa Kuota Saat Ini:</span>
+                        <span class="font-bold text-slate-900" x-text="availableQuotaMinutes + ' Menit'"></span>
+                    </div>
+                    <div x-show="inGracePeriod" class="flex justify-between text-rose-600 font-semibold">
+                        <span>Masa Toleransi Tersisa:</span>
+                        <span class="font-mono font-bold" x-text="formattedGraceLeft"></span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-700">Pilih Opsi Pembelian:</p>
+                    <a
+                        :href="quotaBuyUrl"
+                        target="_blank"
+                        class="w-full flex items-center justify-between p-3.5 rounded-2xl border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 transition text-xs group"
+                    >
+                        <div class="text-left">
+                            <span class="font-bold text-indigo-900 block text-sm">Buka Halaman Beli Kuota</span>
+                            <span class="text-indigo-600 text-[11px]">Buka tab baru untuk memilih paket jam & bayar &rarr;</span>
+                        </div>
+                        <span class="text-xl">💳</span>
+                    </a>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <button
+                        @click="checkQuota(); alert('Status kuota berhasil disinkronkan!')"
+                        type="button"
+                        class="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition"
+                    >
+                        🔄 Sinkronkan Kuota
+                    </button>
+                    <button
+                        @click="showTopUpModal = false"
+                        type="button"
+                        class="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white transition"
+                    >
+                        Tutup & Kembali
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </x-layouts.app>

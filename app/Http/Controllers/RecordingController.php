@@ -28,6 +28,8 @@ class RecordingController extends Controller
         return view('meetings.record', [
             'meeting' => $meeting,
             'organization' => $org,
+            'availableQuotaMinutes' => $org?->availableQuotaMinutes() ?? 0,
+            'gracePeriodMinutes' => (int) config('quota.grace_period_minutes', 15),
             'maxDurationMinutes' => (int) config('recording.max_duration_minutes', 180),
             'retentionMonths' => (int) config('recording.retention_months', 1),
             'allowedMimes' => config('recording.allowed_mimes', []),
@@ -167,9 +169,33 @@ class RecordingController extends Controller
                 'status' => 'uploaded',
             ]);
 
+            $org = $meeting->organization;
+            $usedMin = $org->usedQuotaMinutes();
+            $totalQuota = (int) $org->quota_minutes;
+            $gracePeriodMin = (int) config('quota.grace_period_minutes', 15);
+            $diff = $totalQuota - $usedMin;
+
+            $isInGracePeriod = $diff <= 0 && abs($diff) < $gracePeriodMin;
+            $isGraceExpired = $diff <= 0 && abs($diff) >= $gracePeriodMin;
+            $graceMinutesLeft = $diff <= 0 ? max(0, $gracePeriodMin - abs($diff)) : $gracePeriodMin;
+
+            if ($isInGracePeriod) {
+                Audit::record('recording_grace_period_start', $meeting->id, [
+                    'used_minutes' => $usedMin,
+                    'total_quota' => $totalQuota,
+                    'grace_minutes_left' => $graceMinutesLeft,
+                ]);
+            }
+
             return response()->json([
                 'message' => 'Segmen audio berhasil disimpan.',
                 'segment' => $segment,
+                'quota' => [
+                    'available_minutes' => max(0, $diff),
+                    'is_in_grace_period' => $isInGracePeriod,
+                    'grace_minutes_left' => $graceMinutesLeft,
+                    'grace_expired' => $isGraceExpired,
+                ],
             ], 201);
         } catch (UniqueConstraintViolationException) {
             // Race condition fallback

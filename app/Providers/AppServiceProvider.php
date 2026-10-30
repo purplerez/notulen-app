@@ -2,18 +2,22 @@
 
 namespace App\Providers;
 
+use App\Contracts\PaymentGatewayInterface;
 use App\Contracts\SpeechToTextProvider;
 use App\Contracts\Summarizer;
 use App\Models\Attendee;
 use App\Models\AuditLog;
 use App\Models\Meeting;
 use App\Models\Minute;
+use App\Models\QuotaOrder;
 use App\Models\User;
 use App\Policies\AttendeePolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\MeetingPolicy;
 use App\Policies\MinutePolicy;
+use App\Policies\QuotaOrderPolicy;
 use App\Policies\UserPolicy;
+use App\Services\Billing\MockPaymentGateway;
 use App\Services\Minutes\FakeSummarizer;
 use App\Services\Minutes\LlmSummarizer;
 use App\Services\STT\GroqWhisperProvider;
@@ -48,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
                 default => throw new InvalidArgumentException("Driver Summarizer tidak didukung: {$driver}"),
             };
         });
+
+        $this->app->bind(PaymentGatewayInterface::class, function ($app) {
+            return $app->make(MockPaymentGateway::class);
+        });
     }
 
     /**
@@ -60,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Meeting::class, MeetingPolicy::class);
         Gate::policy(Attendee::class, AttendeePolicy::class);
         Gate::policy(Minute::class, MinutePolicy::class);
+        Gate::policy(QuotaOrder::class, QuotaOrderPolicy::class);
 
         // STT queue rate limiter (RPM)
         RateLimiter::for('stt', function () {

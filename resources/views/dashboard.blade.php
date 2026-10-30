@@ -75,6 +75,15 @@
                         <span>🏢 Atur Kop Surat</span>
                     </a>
                 @endif
+
+                @can('viewAny', App\Models\QuotaOrder::class)
+                    <a
+                        href="{{ route('quota.index') }}"
+                        class="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-1.5 font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 transition"
+                    >
+                        <span>⏱️ Kuota Rekam ({{ $organization?->availableQuotaHours() ?? 0 }} Jam)</span>
+                    </a>
+                @endcan
             </div>
         </div>
 
@@ -85,7 +94,7 @@
         @endif
 
         <!-- Stats Overview Cards -->
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div class="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs space-y-1">
                 <span class="text-xs text-slate-500 font-medium">Total Rapat</span>
                 <p class="text-2xl font-bold text-slate-900">{{ $stats['total_meetings'] }}</p>
@@ -98,11 +107,21 @@
                 <p class="text-[11px] text-slate-400">Siap dibaca & disahkan</p>
             </div>
 
+            <div class="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs space-y-1">
+                <span class="text-xs text-indigo-600 font-medium">Sisa Kuota Rekam</span>
+                <p class="text-2xl font-bold text-indigo-700">{{ $organization?->availableQuotaHours() ?? 0 }} Jam</p>
+                @can('viewAny', App\Models\QuotaOrder::class)
+                    <a href="{{ route('quota.index') }}" class="text-[11px] font-semibold text-indigo-600 hover:underline block">Beli / Tambah &rarr;</a>
+                @else
+                    <p class="text-[11px] text-slate-400">Hubungi Admin</p>
+                @endcan
+            </div>
+
             @if($user->isPimpinan())
-                <div class="rounded-2xl border border-amber-200/90 bg-amber-50/50 p-4 shadow-2xs space-y-1 col-span-2 sm:col-span-1">
+                <div class="rounded-2xl border border-amber-200/90 bg-amber-50/50 p-4 shadow-2xs space-y-1">
                     <span class="text-xs text-amber-800 font-medium">Perlu Diketahui</span>
                     <p class="text-2xl font-bold text-amber-900">{{ $stats['unacknowledged_count'] }}</p>
-                    <p class="text-[11px] text-amber-700">Notulen final belum ditandai</p>
+                    <p class="text-[11px] text-amber-700">Notulen belum ditandai</p>
                 </div>
             @endif
         </div>

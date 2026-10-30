@@ -105,6 +105,14 @@ class Organization extends Model
     }
 
     /**
+     * Get the quota orders for this organization.
+     */
+    public function quotaOrders(): HasMany
+    {
+        return $this->hasMany(QuotaOrder::class);
+    }
+
+    /**
      * Calculate used quota in minutes based on stored audio segments.
      */
     public function usedQuotaMinutes(): int
@@ -112,6 +120,22 @@ class Organization extends Model
         $usedSeconds = (float) $this->audioSegments()->sum('duration_sec');
 
         return (int) ceil($usedSeconds / 60);
+    }
+
+    /**
+     * Calculate remaining available quota in minutes.
+     */
+    public function availableQuotaMinutes(): int
+    {
+        return max(0, $this->quota_minutes - $this->usedQuotaMinutes());
+    }
+
+    /**
+     * Calculate remaining available quota in hours (rounded to 1 decimal place).
+     */
+    public function availableQuotaHours(): float
+    {
+        return round($this->availableQuotaMinutes() / 60, 1);
     }
 
     /**

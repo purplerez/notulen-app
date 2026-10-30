@@ -169,6 +169,13 @@ class AuditLog extends Model
             'platform_fx_update' => 'Pembaruan Kurs USD/IDR',
             'platform_reconciliation_save' => 'Pencatatan Rekonsiliasi Tagihan',
             'storage_cost_calculated' => 'Perhitungan Biaya Penyimpanan',
+            'quota_order_create' => 'Pemesanan Kuota Rekam',
+            'quota_order_proof_upload' => 'Unggah Bukti Bayar Kuota',
+            'quota_order_cancel' => 'Pembatalan Pesanan Kuota',
+            'quota_order_paid' => 'Pembayaran Kuota Berhasil',
+            'quota_order_approved' => 'Verifikasi Pesanan Kuota (Super Admin)',
+            'quota_order_rejected' => 'Penolakan Pesanan Kuota (Super Admin)',
+            'recording_grace_period_start' => 'Pemberian Masa Toleransi Kuota Rekam',
             default => str_replace('_', ' ', ucfirst($this->action)),
         };
     }

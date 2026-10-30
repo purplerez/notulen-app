@@ -13,9 +13,11 @@ use App\Http\Controllers\MinuteController;
 use App\Http\Controllers\OrganizationKopController;
 use App\Http\Controllers\Platform\PlatformAuthController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
+use App\Http\Controllers\Platform\PlatformQuotaController;
 use App\Http\Controllers\Platform\PlatformRateController;
 use App\Http\Controllers\Platform\PlatformReconciliationController;
 use App\Http\Controllers\PublicShareController;
+use App\Http\Controllers\QuotaOrderController;
 use App\Http\Controllers\RecordingController;
 use App\Http\Controllers\ShareLinkController;
 use App\Http\Controllers\TranscriptController;
@@ -127,6 +129,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/meetings/{meeting}/minutes/pdf', [MeetingPdfController::class, 'minute'])->name('meetings.minutes.pdf');
     Route::get('/meetings/{meeting}/minutes/{minute}/pdf', [MeetingPdfController::class, 'minute'])->name('meetings.minutes.version.pdf');
     Route::get('/meetings/{meeting}/attendance/pdf', [MeetingPdfController::class, 'attendanceRecap'])->name('meetings.attendance.pdf');
+
+    // Quota purchase & pay-as-you-go billing
+    Route::get('/quota', [QuotaOrderController::class, 'index'])->name('quota.index');
+    Route::post('/quota/orders', [QuotaOrderController::class, 'store'])->name('quota.orders.store');
+    Route::get('/quota/orders/{quotaOrder}', [QuotaOrderController::class, 'show'])->name('quota.orders.show');
+    Route::post('/quota/orders/{quotaOrder}/proof', [QuotaOrderController::class, 'uploadProof'])->name('quota.orders.proof');
+    Route::post('/quota/orders/{quotaOrder}/simulate', [QuotaOrderController::class, 'simulatePayment'])->name('quota.orders.simulate');
+    Route::post('/quota/orders/{quotaOrder}/cancel', [QuotaOrderController::class, 'cancel'])->name('quota.orders.cancel');
+    Route::get('/quota/status', [QuotaOrderController::class, 'quickStatus'])->name('quota.status');
 });
 
 // Super Admin Platform Routes (Guard: platform)
@@ -163,5 +174,11 @@ Route::prefix('platform')->group(function () {
         Route::get('/rates', [PlatformRateController::class, 'index'])->name('platform.rates.index');
         Route::post('/rates/price', [PlatformRateController::class, 'storePriceRate'])->name('platform.rates.price.store');
         Route::post('/rates/fx', [PlatformRateController::class, 'storeFxRate'])->name('platform.rates.fx.store');
+
+        // Platform Quota Orders Management
+        Route::get('/quota-orders', [PlatformQuotaController::class, 'index'])->name('platform.quota_orders.index');
+        Route::get('/quota-orders/{quotaOrder}/proof', [PlatformQuotaController::class, 'showProof'])->name('platform.quota_orders.proof');
+        Route::post('/quota-orders/{quotaOrder}/approve', [PlatformQuotaController::class, 'approve'])->name('platform.quota_orders.approve');
+        Route::post('/quota-orders/{quotaOrder}/reject', [PlatformQuotaController::class, 'reject'])->name('platform.quota_orders.reject');
     });
 });

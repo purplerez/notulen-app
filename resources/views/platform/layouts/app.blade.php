@@ -54,6 +54,12 @@
                         >
                             💲 Tarif & Kurs
                         </a>
+                        <a
+                            href="{{ route('platform.quota_orders.index') }}"
+                            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors {{ request()->routeIs('platform.quota_orders.*') ? 'bg-slate-800 text-indigo-400 font-bold' : 'text-slate-300 hover:text-white hover:bg-slate-800/60' }}"
+                        >
+                            📦 Pesanan Kuota
+                        </a>
                     </nav>
                 </div>
 
