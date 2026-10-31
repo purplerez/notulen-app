@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Contracts\LlmProvider;
 use App\Contracts\PaymentGatewayInterface;
 use App\Contracts\SpeechToTextProvider;
 use App\Contracts\Summarizer;
@@ -18,6 +19,7 @@ use App\Policies\MinutePolicy;
 use App\Policies\QuotaOrderPolicy;
 use App\Policies\UserPolicy;
 use App\Services\Billing\MockPaymentGateway;
+use App\Services\LLM\GroqLlmProvider;
 use App\Services\Minutes\FakeSummarizer;
 use App\Services\Minutes\LlmSummarizer;
 use App\Services\STT\GroqWhisperProvider;
@@ -34,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(LlmProvider::class, function ($app) {
+            return $app->make(GroqLlmProvider::class);
+        });
+
         $this->app->bind(SpeechToTextProvider::class, function ($app) {
             $driver = config('stt.driver', 'groq');
 

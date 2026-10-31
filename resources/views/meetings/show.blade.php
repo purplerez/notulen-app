@@ -39,6 +39,20 @@
                     </span>
                 @endif
 
+                @if($meeting->status === 'failed')
+                    @can('record', $meeting)
+                        <form method="POST" action="{{ route('meetings.record.retry_transcription', $meeting) }}">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-amber-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-700 active:scale-[0.98] transition"
+                            >
+                                🔄 Coba Ulang Transkripsi
+                            </button>
+                        </form>
+                    @endcan
+                @endif
+
                 <a
                     href="{{ route('meetings.attendance.host', $meeting) }}"
                     class="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 active:scale-[0.98] transition"
@@ -118,6 +132,28 @@
                 @foreach ($errors->all() as $error)
                     <p>⚠️ {{ $error }}</p>
                 @endforeach
+            </div>
+        @endif
+
+        @if($meeting->status === 'failed')
+            <div class="rounded-xl bg-amber-50 p-4 border border-amber-300 text-sm text-amber-900 space-y-2">
+                <div class="flex items-center gap-2 font-bold text-amber-800">
+                    <span>⚠️ Transkripsi AI Otomatis Gagal</span>
+                </div>
+                <p class="text-xs text-amber-700 leading-relaxed">
+                    Audio rapat telah tersimpan aman di server, namun proses transkripsi ke teks terhenti (kemungkinan karena API Key Groq belum valid atau limit tercapai). Setelah memperbarui kunci di file <code>.env</code>, Anda dapat langsung mencoba ulang tanpa perlu merekam kembali.
+                </p>
+                @can('record', $meeting)
+                    <form method="POST" action="{{ route('meetings.record.retry_transcription', $meeting) }}" class="pt-1">
+                        @csrf
+                        <button
+                            type="submit"
+                            class="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-amber-700 transition"
+                        >
+                            🔄 Coba Ulang Transkripsi Sekarang
+                        </button>
+                    </form>
+                @endcan
             </div>
         @endif
 

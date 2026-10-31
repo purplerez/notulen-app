@@ -22,7 +22,14 @@ class GroqWhisperProvider implements SpeechToTextProvider
             throw new TranscriptionException("Berkas audio tidak ditemukan di jalur: {$path}");
         }
 
-        $apiKey = config('stt.drivers.groq.key');
+        $apiKey = trim((string) config('stt.drivers.groq.key'));
+        $apiKey = trim($apiKey, "\"' \t\n\r\0\x0B");
+
+        if (empty($apiKey)) {
+            $apiKey = trim((string) env('GROQ_API_KEY', ''));
+            $apiKey = trim($apiKey, "\"' \t\n\r\0\x0B");
+        }
+
         if (empty($apiKey)) {
             throw new TranscriptionException('GROQ_API_KEY belum dikonfigurasi di lingkungan aplikasi (.env).');
         }

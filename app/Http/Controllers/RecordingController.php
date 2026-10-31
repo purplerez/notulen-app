@@ -275,7 +275,7 @@ class RecordingController extends Controller
     /**
      * Retry transcription for failed segments in a meeting.
      */
-    public function retryTranscription(Meeting $meeting): JsonResponse
+    public function retryTranscription(Request $request, Meeting $meeting): JsonResponse|\Illuminate\Http\RedirectResponse
     {
         $this->authorize('record', $meeting);
 
@@ -285,9 +285,13 @@ class RecordingController extends Controller
             ->get();
 
         if ($failedSegments->isEmpty()) {
-            return response()->json([
-                'message' => 'Tidak ada segmen audio yang perlu dicoba ulang.',
-            ], 422);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Tidak ada segmen audio yang perlu dicoba ulang.',
+                ], 422);
+            }
+
+            return back()->withErrors(['stt' => 'Tidak ada segmen audio yang perlu dicoba ulang.']);
         }
 
         $meeting->update(['status' => 'transcribing']);
@@ -301,9 +305,13 @@ class RecordingController extends Controller
             'segments_count' => $failedSegments->count(),
         ]);
 
-        return response()->json([
-            'message' => "Proses transkripsi untuk {$failedSegments->count()} segmen berhasil dijadwalkan ulang.",
-            'retried_count' => $failedSegments->count(),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => "Proses transkripsi untuk {$failedSegments->count()} segmen berhasil dijadwalkan ulang.",
+                'retried_count' => $failedSegments->count(),
+            ]);
+        }
+
+        return back()->with('success', "Proses transkripsi untuk {$failedSegments->count()} segmen audio berhasil dijadwalkan ulang.");
     }
 }

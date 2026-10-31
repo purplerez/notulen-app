@@ -27,9 +27,10 @@ class AssembleTranscript implements ShouldQueue
      */
     public function handle(): void
     {
-        // Check that all segments are ready
+        // Check that all segments are done (ready, polished, or polish_failed).
+        // polish_failed segments still have their raw text available via TranscriptSegment.text.
         $readyCount = AudioSegment::where('meeting_id', $this->meeting->id)
-            ->where('status', 'ready')
+            ->whereIn('status', ['ready', 'polished', 'polish_failed'])
             ->count();
 
         if ($this->meeting->expected_segments > 0 && $readyCount < $this->meeting->expected_segments) {

@@ -2,12 +2,18 @@
 
 namespace App\Services\Minutes;
 
+use App\Contracts\LlmProvider;
 use App\Contracts\Summarizer;
 use JsonException;
 use RuntimeException;
 
 class LlmSummarizer implements Summarizer
 {
+    /**
+     * Create a new LlmSummarizer instance.
+     */
+    public function __construct(private readonly LlmProvider $llmProvider) {}
+
     /**
      * Summarize transcript using LLM architecture (chunking, validation, retries).
      */
@@ -277,17 +283,10 @@ PROMPT;
     }
 
     /**
-     * Dispatch prompt to LLM provider.
-     * Throws an exception by default as provider is unassigned per architectural design.
+     * Dispatch prompt to Groq LLM via the injected LlmProvider.
      */
     protected function callLlmApi(string $prompt): string
     {
-        $provider = config('summarizer.drivers.llm.provider');
-
-        if (empty($provider)) {
-            throw new RuntimeException('Penyedia LLM belum dikonfigurasi. Silakan atur konfigurasi penyedia di config/summarizer.php.');
-        }
-
-        throw new RuntimeException("Penyedia LLM '{$provider}' belum dihubungkan ke implementasi API.");
+        return $this->llmProvider->complete($prompt);
     }
 }

@@ -259,13 +259,19 @@ class TranscribeSegment implements ShouldQueue
 
         $this->segment->update(['status' => 'ready']);
 
-        // 6. Check if all segments for the meeting are now ready
-        $readyCount = AudioSegment::where('meeting_id', $meeting->id)
-            ->where('status', 'ready')
-            ->count();
+        // 6. If transcript polishing is enabled, dispatch PolishTranscript job.
+        // AssembleTranscript will be dispatched by PolishTranscript once all segments are done.
+        // Otherwise, check directly whether all segments are ready and dispatch assembly.
+        if (config('summarizer.polish_enabled', false)) {
+            PolishTranscript::dispatch($this->segment);
+        } else {
+            $readyCount = AudioSegment::where('meeting_id', $meeting->id)
+                ->where('status', 'ready')
+                ->count();
 
-        if ($meeting->expected_segments > 0 && $readyCount >= $meeting->expected_segments) {
-            AssembleTranscript::dispatch($meeting);
+            if ($meeting->expected_segments > 0 && $readyCount >= $meeting->expected_segments) {
+                AssembleTranscript::dispatch($meeting);
+            }
         }
     }
 }
