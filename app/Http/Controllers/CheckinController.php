@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -138,11 +139,14 @@ class CheckinController extends Controller
                 ]);
             }
 
+            $signaturePath = $this->saveSignature($attendee, $request->input('signature'), $meeting->organization_id);
+
             $attendee->update([
                 'status' => $status,
                 'checked_in_at' => now(),
                 'method' => 'qr',
                 'phone_e164' => $normalizedPhone,
+                'signature_path' => $signaturePath ?? $attendee->signature_path,
             ]);
 
             Audit::record(
@@ -192,6 +196,11 @@ class CheckinController extends Controller
             'note' => $status === 'terlambat' ? 'Presensi melewati batas keterlambatan' : null,
         ]);
 
+        $guestSigPath = $this->saveSignature($guestAttendee, $request->input('signature'), $meeting->organization_id);
+        if ($guestSigPath) {
+            $guestAttendee->update(['signature_path' => $guestSigPath]);
+        }
+
         Audit::record(
             'guest_checkin_pending',
             $meeting->id,
@@ -211,5 +220,39 @@ class CheckinController extends Controller
             'isGuest' => true,
             'pendingApproval' => true,
         ]);
+    }
+
+    /**
+     * Decode and store base64 PNG signature to organization disk.
+     */
+    protected function saveSignature(Attendee $attendee, ?string $signatureData, int $organizationId): ?string
+    {
+        if (empty($signatureData)) {
+            return null;
+        }
+
+        // Expected format: data:image/png;base64,iVBORw0KGgo...
+        if (! preg_match('/^data:image\/(png|jpeg|jpg);base64,(.+)$/', $signatureData, $matches)) {
+            return null;
+        }
+
+        $decoded = base64_decode($matches[2], true);
+        if ($decoded === false || strlen($decoded) < 20) {
+            return null;
+        }
+
+        // Maximum size: 1MB
+        if (strlen($decoded) > 1024 * 1024) {
+            return null;
+        }
+
+        $disk = config('recording.disk', 'local');
+        $directory = "orgs/{$organizationId}/signatures";
+        $filename = "sig_{$attendee->id}_".time().'.png';
+        $path = "{$directory}/{$filename}";
+
+        Storage::disk($disk)->put($path, $decoded);
+
+        return $path;
     }
 }

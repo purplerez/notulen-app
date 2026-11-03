@@ -135,4 +135,3 @@ class PlatformQuotaController extends Controller
         return back()->with('success', "Pesanan #{$quotaOrder->order_number} telah ditolak dengan catatan.");
     }
 }
-

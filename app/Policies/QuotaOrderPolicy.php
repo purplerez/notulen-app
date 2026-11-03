@@ -73,4 +73,3 @@ class QuotaOrderPolicy
         return $user->isAdmin() && in_array($order->status, ['pending', 'waiting_verification'], true);
     }
 }
-

@@ -57,6 +57,18 @@
                 <span class="block text-xs font-semibold text-slate-700">{{ $meeting->title }}</span>
             </div>
 
+            @if($attendee->hasSignature() && $attendee->getSignatureBase64())
+                <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="block text-xs text-slate-400">Tanda Tangan Digital</span>
+                        <span class="block text-xs font-semibold text-emerald-600">✓ Tersimpan & sah</span>
+                    </div>
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-1">
+                        <img src="{{ $attendee->getSignatureBase64() }}" alt="Paraf" class="h-10 max-w-[120px] object-contain" />
+                    </div>
+                </div>
+            @endif
+
             @if($attendee->is_guest && $attendee->guest_status === 'pending')
                 <div class="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 border border-amber-200/80 leading-relaxed">
                     ℹ️ Anda terdaftar sebagai <strong>tamu</strong> di luar daftar undangan. Kehadiran Anda menunggu konfirmasi oleh administrator atau notulis rapat.

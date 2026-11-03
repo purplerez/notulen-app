@@ -47,7 +47,7 @@ class AttendanceController extends Controller
         $attendees = $meeting->attendees()
             ->whereNotNull('checked_in_at')
             ->latest('checked_in_at')
-            ->get(['id', 'name', 'position', 'status', 'method', 'checked_in_at', 'is_guest', 'guest_status']);
+            ->get(['id', 'name', 'position', 'status', 'method', 'checked_in_at', 'is_guest', 'guest_status', 'signature_path']);
 
         $totalInvited = $meeting->attendees()->where('is_guest', false)->count();
         $totalPresent = $meeting->attendees()->whereIn('status', ['hadir', 'terlambat'])->count();

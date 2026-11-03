@@ -12,13 +12,81 @@
                 Pemantauan konsumsi sumber daya dan estimasi biaya riil seluruh lembaga (Periode: <strong class="text-slate-200">{{ \Illuminate\Support\Carbon::parse($currentMonth)->translatedFormat('F Y') }}</strong>).
             </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+            <a
+                href="{{ route('platform.organizations.create') }}"
+                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-500 active:scale-95 transition"
+            >
+                <span>🏢</span> + Daftarkan Lembaga Baru
+            </a>
             <span class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs text-slate-300">
                 <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 Sistem Aktif
             </span>
         </div>
     </div>
+
+    <!-- Flash Created Credentials Banner -->
+    @if (session('created_credentials'))
+        @php $cred = session('created_credentials'); @endphp
+        <div x-data="{
+            copied: false,
+            copyText() {
+                const text = `KREDENSIAL LOGIN NOTULENSI RAPAT\nLembaga: {{ $cred['organization_name'] }}\nLogin URL: {{ $cred['login_url'] }}\n\n[ADMINISTRATOR]\nEmail: {{ $cred['admin_email'] }}\nPassword: {{ $cred['admin_password'] }}@if(!empty($cred['leader_email']))\n\n[PIMPINAN]\nEmail: {{ $cred['leader_email'] }}\nPassword: {{ $cred['leader_password'] }}@endif\n\nKuota Awal: {{ $cred['quota_minutes'] }} Menit ({{ round($cred['quota_minutes']/60, 1) }} Jam)`;
+                navigator.clipboard.writeText(text);
+                this.copied = true;
+                setTimeout(() => this.copied = false, 3000);
+            }
+        }" class="rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-5 shadow-sm space-y-3 text-xs text-emerald-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-emerald-800/40 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-sm">
+                        ✓
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Lembaga &quot;{{ $cred['organization_name'] }}&quot; Berhasil Didaftarkan!</h3>
+                        <p class="text-[11px] text-emerald-300">Salin kredensial di bawah ini untuk diserahkan kepada pihak sekolah/instansi mitra.</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    @click="copyText()"
+                    class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-emerald-500 active:scale-95 transition"
+                >
+                    <span x-show="!copied">📋 Salin Seluruh Kredensial</span>
+                    <span x-show="copied" style="display: none;">✓ Berhasil Disalin!</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                <div class="rounded-xl border border-emerald-800/50 bg-slate-900/60 p-3 space-y-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">Akun Administrator</span>
+                    <div class="text-white font-semibold">{{ $cred['admin_name'] }}</div>
+                    <div class="text-slate-300 font-mono text-[11px]">Email: <span class="text-white font-bold">{{ $cred['admin_email'] }}</span></div>
+                    <div class="text-slate-300 font-mono text-[11px]">Password: <span class="text-emerald-400 font-bold">{{ $cred['admin_password'] }}</span></div>
+                </div>
+
+                @if(!empty($cred['leader_email']))
+                <div class="rounded-xl border border-emerald-800/50 bg-slate-900/60 p-3 space-y-1">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">Akun Pimpinan</span>
+                    <div class="text-white font-semibold">{{ $cred['leader_name'] }}</div>
+                    <div class="text-slate-300 font-mono text-[11px]">Email: <span class="text-white font-bold">{{ $cred['leader_email'] }}</span></div>
+                    <div class="text-slate-300 font-mono text-[11px]">Password: <span class="text-emerald-400 font-bold">{{ $cred['leader_password'] }}</span></div>
+                </div>
+                @else
+                <div class="rounded-xl border border-emerald-800/30 bg-slate-900/30 p-3 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Status Kuota Awal</span>
+                        <div class="text-white font-bold text-sm mt-0.5">{{ $cred['quota_minutes'] }} Menit ({{ round($cred['quota_minutes'] / 60, 1) }} Jam)</div>
+                    </div>
+                    <span class="inline-flex items-center rounded-md bg-indigo-950 px-2 py-1 text-[10px] font-bold text-indigo-300 border border-indigo-800 uppercase">
+                        {{ $cred['plan'] }}
+                    </span>
+                </div>
+                @endif
+            </div>
+        </div>
+    @endif
 
     <!-- Global Platform Metrics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -345,6 +345,9 @@
                     </td>
                     <td class="paraf-cell">
                         <span style="float: left; font-size: 6.5pt; color: #94a3b8;">{{ $idx + 1 }}.</span>
+                        @if($att->hasSignature() && $att->getSignatureBase64())
+                            <img src="{{ $att->getSignatureBase64() }}" style="max-height: 24px; max-width: 50px; display: inline-block; vertical-align: middle; margin-left: 2px;" alt="Paraf" />
+                        @endif
                     </td>
                 </tr>
             @empty

@@ -225,7 +225,7 @@
 
                                 @if($segment->isEdited())
                                     <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-600/20">
-                                        Diedit @if($segment->editor) oleh {{ $segment->editor->name }} @endif
+                                        Diedit @if($segment->editor) oleh {{ $segment->editor->name }} @else (AI) @endif
                                     </span>
                                 @else
                                     <span class="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
@@ -369,6 +369,8 @@
 
                                     @if($segment->editor)
                                         <span class="text-[10px] text-slate-400">{{ $segment->editor->name }}</span>
+                                    @elseif($segment->isEdited())
+                                        <span class="text-[10px] text-slate-400">Penyuntingan Otomatis (AI)</span>
                                     @endif
                                 </div>
                                 <p class="text-slate-900 leading-relaxed {{ $segment->isEdited() ? 'font-medium' : 'text-slate-600' }}">

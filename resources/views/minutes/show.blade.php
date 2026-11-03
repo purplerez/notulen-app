@@ -506,9 +506,10 @@
                                 </table>
                             </div>
 
-                            <p class="text-[11px] text-slate-400 italic pt-1">
+                           {{--  <p class="text-[11px] text-slate-400 italic pt-1">
                                 ℹ️ Catatan: Tombol 'Kirim WA' membuka obrolan WhatsApp di aplikasi Anda. Status 'Sudah Diklik' hanya penanda interaksi lokal; sistem tidak dapat memastikan pesan terkirim secara eksternal. Status 'Dibuka' diperbarui saat penerima sukses memverifikasi akses.
                             </p>
+                            --}}
                         </div>
                     @endif
                 @else

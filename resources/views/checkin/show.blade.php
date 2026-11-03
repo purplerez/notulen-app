@@ -145,6 +145,36 @@
                         </p>
                     </div>
 
+                    <!-- Online Digital Signature Pad -->
+                    <div class="space-y-2 pt-2 border-t border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-semibold text-slate-700">
+                                ✍️ Tanda Tangan / Paraf Digital
+                            </label>
+                            <button
+                                type="button"
+                                id="btn-clear-sig"
+                                class="text-[11px] font-semibold text-rose-600 hover:text-rose-700 px-2 py-0.5 rounded border border-rose-200 bg-rose-50/50 hover:bg-rose-100 transition"
+                            >
+                                Hapus / Ulangi
+                            </button>
+                        </div>
+                        <div class="relative w-full rounded-xl border border-slate-300 bg-slate-50 overflow-hidden shadow-inner">
+                            <canvas
+                                id="sig-canvas"
+                                class="w-full h-36 block cursor-crosshair"
+                                style="touch-action: none;"
+                            ></canvas>
+                            <div id="sig-placeholder" class="pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-slate-400 select-none">
+                                Goreskan tanda tangan / paraf Anda di sini
+                            </div>
+                        </div>
+                        <input type="hidden" name="signature" id="sig-data" value="" />
+                        <p class="text-[11px] text-slate-400">
+                            Gunakan jari (di ponsel) atau kursor mouse untuk membubuhkan tanda tangan.
+                        </p>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="pt-3">
                         <button
@@ -155,6 +185,117 @@
                         </button>
                     </div>
                 </form>
+
+                <script>
+                    (function() {
+                        const canvas = document.getElementById('sig-canvas');
+                        if (!canvas) return;
+
+                        const ctx = canvas.getContext('2d');
+                        const placeholder = document.getElementById('sig-placeholder');
+                        const sigDataInput = document.getElementById('sig-data');
+                        const btnClear = document.getElementById('btn-clear-sig');
+                        const form = canvas.closest('form');
+
+                        let isDrawing = false;
+                        let hasDrawn = false;
+                        let lastX = 0;
+                        let lastY = 0;
+
+                        function resizeCanvas() {
+                            const rect = canvas.getBoundingClientRect();
+                            const dpr = window.devicePixelRatio || 1;
+
+                            // Save current drawing if any
+                            let tempImg = null;
+                            if (hasDrawn) {
+                                tempImg = canvas.toDataURL();
+                            }
+
+                            canvas.width = rect.width * dpr;
+                            canvas.height = rect.height * dpr;
+                            ctx.scale(dpr, dpr);
+
+                            ctx.strokeStyle = '#0f172a';
+                            ctx.lineWidth = 2.5;
+                            ctx.lineCap = 'round';
+                            ctx.lineJoin = 'round';
+
+                            if (tempImg) {
+                                const img = new Image();
+                                img.onload = () => {
+                                    ctx.drawImage(img, 0, 0, rect.width, rect.height);
+                                };
+                                img.src = tempImg;
+                            }
+                        }
+
+                        window.addEventListener('resize', resizeCanvas);
+                        // Initial size setup
+                        setTimeout(resizeCanvas, 50);
+
+                        function getPos(e) {
+                            const rect = canvas.getBoundingClientRect();
+                            return {
+                                x: e.clientX - rect.left,
+                                y: e.clientY - rect.top
+                            };
+                        }
+
+                        canvas.addEventListener('pointerdown', (e) => {
+                            isDrawing = true;
+                            canvas.setPointerCapture(e.pointerId);
+                            const pos = getPos(e);
+                            lastX = pos.x;
+                            lastY = pos.y;
+
+                            if (!hasDrawn) {
+                                hasDrawn = true;
+                                if (placeholder) placeholder.style.display = 'none';
+                            }
+                        });
+
+                        canvas.addEventListener('pointermove', (e) => {
+                            if (!isDrawing) return;
+                            const pos = getPos(e);
+                            ctx.beginPath();
+                            ctx.moveTo(lastX, lastY);
+                            ctx.lineTo(pos.x, pos.y);
+                            ctx.stroke();
+                            lastX = pos.x;
+                            lastY = pos.y;
+                        });
+
+                        function stopDrawing(e) {
+                            if (!isDrawing) return;
+                            isDrawing = false;
+                            try {
+                                canvas.releasePointerCapture(e.pointerId);
+                            } catch (_) {}
+                        }
+
+                        canvas.addEventListener('pointerup', stopDrawing);
+                        canvas.addEventListener('pointercancel', stopDrawing);
+
+                        if (btnClear) {
+                            btnClear.addEventListener('click', () => {
+                                const rect = canvas.getBoundingClientRect();
+                                ctx.clearRect(0, 0, rect.width, rect.height);
+                                hasDrawn = false;
+                                if (sigDataInput) sigDataInput.value = '';
+                                if (placeholder) placeholder.style.display = 'flex';
+                            });
+                        }
+
+                        if (form) {
+                            form.addEventListener('submit', () => {
+                                if (hasDrawn && sigDataInput) {
+                                    sigDataInput.value = canvas.toDataURL('image/png');
+                                }
+                            });
+                        }
+                    })();
+                </script>
             </div>
         @endif
     </div>

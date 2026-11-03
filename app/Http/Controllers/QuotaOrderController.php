@@ -213,4 +213,3 @@ class QuotaOrderController extends Controller
         ]);
     }
 }
-

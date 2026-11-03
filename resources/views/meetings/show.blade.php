@@ -440,6 +440,11 @@
                                                 Tamu {{ $attendee->guest_status ? '(' . $attendee->guest_status . ')' : '' }}
                                             </span>
                                         @endif
+                                        @if($attendee->hasSignature())
+                                            <span class="inline-flex items-center rounded-md bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700" title="Tanda tangan digital tersimpan">
+                                                ✍️ Ttd
+                                            </span>
+                                        @endif
                                     </div>
                                     <p class="text-xs text-slate-500 truncate mt-0.5">
                                         {{ $attendee->position ?? 'Peserta' }} • +{{ $attendee->phone_e164 }}

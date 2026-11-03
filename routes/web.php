@@ -13,6 +13,7 @@ use App\Http\Controllers\MinuteController;
 use App\Http\Controllers\OrganizationKopController;
 use App\Http\Controllers\Platform\PlatformAuthController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
+use App\Http\Controllers\Platform\PlatformOrganizationController;
 use App\Http\Controllers\Platform\PlatformQuotaController;
 use App\Http\Controllers\Platform\PlatformRateController;
 use App\Http\Controllers\Platform\PlatformReconciliationController;
@@ -165,6 +166,8 @@ Route::prefix('platform')->group(function () {
         Route::post('/logout', [PlatformAuthController::class, 'logout'])->name('platform.logout');
 
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('platform.dashboard');
+        Route::get('/organizations/create', [PlatformOrganizationController::class, 'create'])->name('platform.organizations.create');
+        Route::post('/organizations', [PlatformOrganizationController::class, 'store'])->name('platform.organizations.store');
         Route::get('/organizations/{organization}', [PlatformDashboardController::class, 'organization'])->name('platform.organizations.show');
         Route::get('/organizations/{organization}/export-csv', [PlatformDashboardController::class, 'exportCsv'])->name('platform.organizations.export_csv');
 

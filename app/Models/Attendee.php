@@ -7,6 +7,7 @@ use App\Support\PhoneNumber;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Attendee extends Model
 {
@@ -37,6 +38,7 @@ class Attendee extends Model
         'is_guest',
         'guest_status',
         'note',
+        'signature_path',
     ];
 
     /**
@@ -74,5 +76,37 @@ class Attendee extends Model
     public function contact(): BelongsTo
     {
         return $this->belongsTo(OrgContact::class, 'contact_id');
+    }
+
+    /**
+     * Determine whether the attendee has a saved digital signature.
+     */
+    public function hasSignature(): bool
+    {
+        return ! empty($this->signature_path);
+    }
+
+    /**
+     * Get the attendee's signature as a Base64 data URI for embedding in PDF / HTML.
+     */
+    public function getSignatureBase64(): ?string
+    {
+        if (empty($this->signature_path)) {
+            return null;
+        }
+
+        $disk = config('recording.disk', 'local');
+        $storage = Storage::disk($disk);
+
+        if (! $storage->exists($this->signature_path)) {
+            return null;
+        }
+
+        $content = $storage->get($this->signature_path);
+        if (empty($content)) {
+            return null;
+        }
+
+        return 'data:image/png;base64,'.base64_encode($content);
     }
 }

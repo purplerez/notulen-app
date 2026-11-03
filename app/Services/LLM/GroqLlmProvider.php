@@ -30,7 +30,7 @@ class GroqLlmProvider implements LlmProvider
             throw new LlmException('API key LLM belum dikonfigurasi. Pastikan GROQ_API_KEY atau LLM_API_KEY ada di .env.');
         }
 
-        $model = (string) config('summarizer.drivers.llm.model', 'llama-3.3-70b-versatile');
+        $model = (string) config('summarizer.drivers.llm.model', 'openai/gpt-oss-120b');
         $timeout = (int) config('summarizer.drivers.llm.timeout', 120);
 
         $response = Http::withToken($apiKey)

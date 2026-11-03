@@ -29,4 +29,3 @@ interface PaymentGatewayInterface
      */
     public function verifyPayment(QuotaOrder $order): array;
 }
-
