@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Presensi Berhasil - ' . $meeting->title">
+<x-layouts.app :title="'Presensi Berhasil - ' . $meeting->title" :narrow="true">
     <div class="space-y-6 pt-4 text-center">
         <!-- Success Icon -->
         <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-8 ring-emerald-500/10">

@@ -2,6 +2,13 @@
     <x-slot:headerActions>
         <div class="flex items-center gap-2">
             <a
+                href="{{ route('password.edit') }}"
+                class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+            >
+                <span>🔑 Ganti Password</span>
+            </a>
+
+            <a
                 href="{{ route('audit_logs.index') }}"
                 class="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
             >
@@ -65,6 +72,13 @@
                     class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
                 >
                     <span>📜 Lihat Log Akses</span>
+                </a>
+
+                <a
+                    href="{{ route('password.edit') }}"
+                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition"
+                >
+                    <span>🔑 Ubah Password</span>
                 </a>
 
                 @if($organization && $user->can('update', $organization))

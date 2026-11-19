@@ -160,10 +160,17 @@
                                 <td class="border border-slate-300 px-3 py-2 text-center uppercase text-[11px] text-slate-500">
                                     {{ $person->method ?? '-' }}
                                 </td>
-                                <td class="border border-slate-300 px-3 py-2 text-center h-10 align-middle">
-                                    <span class="inline-block text-[10px] text-slate-300 select-none">
-                                        {{ $idx % 2 === 0 ? ($idx + 1) . '. .........' : '......... ' . ($idx + 1) }}
-                                    </span>
+                                <td class="border border-slate-300 px-2 py-1.5 text-center h-12 align-middle">
+                                    @if($person->hasSignature() && $person->getSignatureBase64())
+                                        <div class="flex items-center justify-center gap-1.5" title="Paraf {{ $person->name }}">
+                                            <span class="text-[10px] text-slate-400 font-mono shrink-0">{{ $idx + 1 }}.</span>
+                                            <img src="{{ $person->getSignatureBase64() }}" alt="Paraf {{ $person->name }}" class="h-9 max-w-[85px] object-contain" />
+                                        </div>
+                                    @else
+                                        <span class="inline-block text-[10px] text-slate-300 select-none">
+                                            {{ $idx % 2 === 0 ? ($idx + 1) . '. .........' : '......... ' . ($idx + 1) }}
+                                        </span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

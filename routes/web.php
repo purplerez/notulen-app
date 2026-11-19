@@ -4,6 +4,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AudioPlaybackController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\CheckinController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MeetingAttendeeController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\OrganizationKopController;
 use App\Http\Controllers\Platform\PlatformAuthController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformOrganizationController;
+use App\Http\Controllers\Platform\PlatformPasswordController;
 use App\Http\Controllers\Platform\PlatformQuotaController;
 use App\Http\Controllers\Platform\PlatformRateController;
 use App\Http\Controllers\Platform\PlatformReconciliationController;
@@ -63,6 +65,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit_logs.index');
+
+    // Change password
+    Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/password', [PasswordController::class, 'update'])->name('password.update')->middleware('throttle:6,1');
 
     // User management (creating notulis accounts)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -183,5 +189,9 @@ Route::prefix('platform')->group(function () {
         Route::get('/quota-orders/{quotaOrder}/proof', [PlatformQuotaController::class, 'showProof'])->name('platform.quota_orders.proof');
         Route::post('/quota-orders/{quotaOrder}/approve', [PlatformQuotaController::class, 'approve'])->name('platform.quota_orders.approve');
         Route::post('/quota-orders/{quotaOrder}/reject', [PlatformQuotaController::class, 'reject'])->name('platform.quota_orders.reject');
+
+        // Super Admin Password update
+        Route::get('/password', [PlatformPasswordController::class, 'edit'])->name('platform.password.edit');
+        Route::put('/password', [PlatformPasswordController::class, 'update'])->name('platform.password.update')->middleware('throttle:6,1');
     });
 });

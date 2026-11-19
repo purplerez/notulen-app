@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Presensi Rapat - ' . $meeting->title">
+<x-layouts.app :title="'Presensi Rapat - ' . $meeting->title" :narrow="true">
     <div class="space-y-6 pt-2">
         <!-- Meeting Header -->
         <div class="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs space-y-2">

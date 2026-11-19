@@ -71,6 +71,15 @@
                         </span>
                     </div>
 
+                    <a
+                        href="{{ route('platform.password.edit') }}"
+                        class="rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-all shadow-xs flex items-center gap-1.5"
+                        title="Ubah Password Super Admin"
+                    >
+                        <span>🔑</span>
+                        <span class="hidden sm:inline">Ubah Password</span>
+                    </a>
+
                     <form method="POST" action="{{ route('platform.logout') }}">
                         @csrf
                         <button

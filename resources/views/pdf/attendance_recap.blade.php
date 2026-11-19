@@ -163,11 +163,12 @@
         }
 
         .paraf-cell {
-            height: 32px;
+            height: 34px;
             text-align: center;
-            vertical-align: bottom;
+            vertical-align: middle;
             font-size: 7pt;
-            color: #cbd5e1;
+            color: #94a3b8;
+            padding: 2px 4px;
         }
 
         /* Signature Block */
@@ -344,9 +345,21 @@
                         @endif
                     </td>
                     <td class="paraf-cell">
-                        <span style="float: left; font-size: 6.5pt; color: #94a3b8;">{{ $idx + 1 }}.</span>
                         @if($att->hasSignature() && $att->getSignatureBase64())
-                            <img src="{{ $att->getSignatureBase64() }}" style="max-height: 24px; max-width: 50px; display: inline-block; vertical-align: middle; margin-left: 2px;" alt="Paraf" />
+                            <table style="width: 100%; border-collapse: collapse; border: none; margin: 0; padding: 0;">
+                                <tr>
+                                    <td style="width: 14px; border: none; text-align: left; font-size: 6.5pt; color: #94a3b8; vertical-align: middle; padding: 0;">
+                                        {{ $idx + 1 }}.
+                                    </td>
+                                    <td style="border: none; text-align: center; vertical-align: middle; padding: 0;">
+                                        <img src="{{ $att->getSignatureBase64() }}" style="max-height: 28px; max-width: 55px; vertical-align: middle;" alt="Paraf" />
+                                    </td>
+                                </tr>
+                            </table>
+                        @else
+                            <div style="font-size: 7pt; color: #cbd5e1; text-align: {{ $idx % 2 === 0 ? 'left' : 'right' }};">
+                                {{ $idx % 2 === 0 ? ($idx + 1) . '. .........' : '......... ' . ($idx + 1) }}
+                            </div>
                         @endif
                     </td>
                 </tr>

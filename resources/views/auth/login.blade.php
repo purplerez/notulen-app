@@ -1,4 +1,4 @@
-<x-layouts.app :title="'Masuk - ' . config('app.name', 'Notulensi Rapat')">
+<x-layouts.app :title="'Masuk - ' . config('app.name', 'Notulensi Rapat')" :narrow="true">
     <div class="space-y-6 pt-4">
         <div class="text-center space-y-1">
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">Masuk ke Akun</h1>

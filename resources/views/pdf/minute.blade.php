@@ -405,7 +405,8 @@
                         <th class="center" style="width: 30px;">No</th>
                         <th>Nama Peserta</th>
                         <th>Jabatan</th>
-                        <th class="center" style="width: 90px;">Status Hadir</th>
+                        <th class="center" style="width: 80px;">Status Hadir</th>
+                        <th class="center" style="width: 65px;">Paraf</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -419,6 +420,13 @@
                                     {{ ucfirst(str_replace('_', ' ', $att->status)) }}
                                 @else
                                     <em>Belum Absen</em>
+                                @endif
+                            </td>
+                            <td class="center" style="vertical-align: middle; padding: 2px;">
+                                @if($att->hasSignature() && $att->getSignatureBase64())
+                                    <img src="{{ $att->getSignatureBase64() }}" style="max-height: 24px; max-width: 50px; vertical-align: middle;" alt="Paraf" />
+                                @else
+                                    <span style="font-size: 6.5pt; color: #cbd5e1;">-</span>
                                 @endif
                             </td>
                         </tr>
