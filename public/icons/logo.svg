@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="60%" stop-color="#4338ca" />
+      <stop offset="100%" stop-color="#312e81" />
+    </linearGradient>
+
+    <!-- Glowing Accent Gradient for Soundwaves & AI -->
+    <linearGradient id="cyanSpark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <!-- Subtle Outer Shadow -->
+    <filter id="appShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#1e1b4b" flood-opacity="0.35" />
+    </filter>
+
+    <!-- Glass Inner Sheen -->
+    <linearGradient id="sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle Base App Icon -->
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#bgGrad)" filter="url(#appShadow)" />
+  <rect x="24" y="24" width="464" height="232" rx="112" fill="url(#sheen)" />
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="none" stroke="#a5b4fc" stroke-width="3" stroke-opacity="0.25" />
+
+  <!-- Central Symbol: Monogram 'N' & Meeting Audio Transcription -->
+  <!-- Left Pillar: Formal Document / Notepad spine -->
+  <path d="M 148 144 C 148 135 155 128 164 128 L 192 128 C 201 128 208 135 208 144 L 208 368 C 208 377 201 384 192 384 L 164 384 C 155 384 148 377 148 368 Z" fill="#ffffff" />
+
+  <!-- Diagonal Bridge: Dynamic audio soundwave flow connecting the 'N' -->
+  <path d="M 200 162 L 312 342 C 316 348 322 352 328 352 L 348 352 C 358 352 364 342 358 333 L 246 153 C 242 147 236 143 230 143 L 210 143 C 200 143 194 153 200 162 Z" fill="#ffffff" fill-opacity="0.9" />
+
+  <!-- Right Pillar: Modern Audio Equalizer Bars (Meeting Audio / Voice Recording) -->
+  <rect x="304" y="192" width="24" height="192" rx="12" fill="#ffffff" />
+  
+  <!-- Soundwave Frequency Bars (Voice & Speech Recognition) -->
+  <rect x="240" y="210" width="14" height="92" rx="7" fill="url(#cyanSpark)" />
+  <rect x="264" y="180" width="14" height="152" rx="7" fill="url(#cyanSpark)" />
+
+  <!-- AI Intelligence Star Spark (Top Right Accent) -->
+  <path d="M 374 122 C 374 140 388 154 406 154 C 388 154 374 168 374 186 C 374 168 360 154 342 154 C 360 154 374 140 374 122 Z" fill="#38bdf8" />
+  <circle cx="374" cy="154" r="3" fill="#ffffff" />
+</svg>

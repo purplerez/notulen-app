@@ -109,6 +109,11 @@ class MinuteController extends Controller
 
         $cachedPlainToken = session("share_token_{$meeting->id}");
 
+        $canViewTranscript = Gate::allows('viewTranscript', $meeting);
+        $transcriptSegments = $canViewTranscript
+            ? $meeting->transcriptSegments()->with('editor')->orderBy('start_sec')->get()
+            : collect();
+
         return view('minutes.show', [
             'meeting' => $meeting,
             'minute' => $minute,
@@ -124,6 +129,8 @@ class MinuteController extends Controller
             'recipients' => $recipients,
             'openedLogMap' => $openedLogMap,
             'cachedPlainToken' => $cachedPlainToken,
+            'canViewTranscript' => $canViewTranscript,
+            'transcriptSegments' => $transcriptSegments,
         ]);
     }
 

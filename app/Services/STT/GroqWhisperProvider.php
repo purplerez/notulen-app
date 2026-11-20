@@ -52,6 +52,7 @@ class GroqWhisperProvider implements SpeechToTextProvider
                     'model' => $model,
                     'language' => $lang,
                     'response_format' => 'verbose_json',
+                    'prompt' => 'Transkripsi percakapan rapat dalam bahasa Indonesia, mungkin memuat ungkapan bahasa daerah seperti Jawa atau Sunda dan istilah bahasa Inggris. Suara tertawa atau gumaman tanpa makna diabaikan.',
                 ]));
         } catch (ConnectionException $e) {
             throw new TranscriptionException("Koneksi ke endpoint STT timeout atau gagal: {$e->getMessage()}", 504, $e);

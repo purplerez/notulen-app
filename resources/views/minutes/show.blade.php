@@ -1,5 +1,28 @@
 <x-layouts.app :title="'Notulen - ' . $meeting->title">
-    <div x-data="{ reviseModalOpen: false, shareModalOpen: false, copied: false, clickedWa: {} }" class="space-y-6">
+    <div x-data="{
+        reviseModalOpen: false,
+        shareModalOpen: false,
+        copied: false,
+        clickedWa: {},
+        viewMode: 'ringkas',
+        copiedTranscript: false,
+        copyTranscript() {
+            const elements = document.querySelectorAll('[data-minute-segment-text]');
+            const lines = [];
+            elements.forEach(el => {
+                const time = el.getAttribute('data-time') || '';
+                const text = el.querySelector('p')?.innerText.trim() || el.innerText.trim();
+                if (text) {
+                    lines.push(time ? `[${time}] ${text}` : text);
+                }
+            });
+            const fullText = lines.join('\n\n');
+            navigator.clipboard.writeText(fullText).then(() => {
+                this.copiedTranscript = true;
+                setTimeout(() => this.copiedTranscript = false, 2500);
+            });
+        }
+    }" class="space-y-6">
         <!-- Top Navigation -->
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
             <div>
@@ -209,8 +232,47 @@
             @endif
         </div>
 
-        <!-- Main Minutes Content Body -->
-        <div class="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-2xs space-y-8">
+        <!-- Mode Switcher: Versi Ringkas vs Versi Lengkap (Bagi Notulis & Pimpinan) -->
+        @if($canViewTranscript && $transcriptSegments->isNotEmpty())
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/90 shadow-2xs">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Format Tampilan:</span>
+                    <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold">
+                        <button
+                            type="button"
+                            @click="viewMode = 'ringkas'"
+                            :class="viewMode === 'ringkas' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                            class="rounded-lg px-3.5 py-1.5 transition flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <span>📋</span>
+                            <span>Versi Ringkas (Notulen Rapat)</span>
+                        </button>
+                        <button
+                            type="button"
+                            @click="viewMode = 'lengkap'"
+                            :class="viewMode === 'lengkap' ? 'bg-white text-indigo-700 shadow-2xs' : 'text-slate-600 hover:text-slate-900'"
+                            class="rounded-lg px-3.5 py-1.5 transition flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <span>🎙️</span>
+                            <span>Versi Lengkap (Transkrip Ucapan)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <a
+                        href="{{ route('meetings.transcript.show', $meeting) }}"
+                        class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1"
+                    >
+                        <span>Studio Transkrip & Audio</span>
+                        <span>→</span>
+                    </a>
+                </div>
+            </div>
+        @endif
+
+        <!-- Main Minutes Content Body (Versi Ringkas) -->
+        <div x-show="viewMode === 'ringkas'" class="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-2xs space-y-8">
             <!-- Kop / Meta header -->
             <div class="border-b border-slate-200 pb-5 space-y-1">
                 <div class="flex items-center justify-between text-xs text-slate-400">
@@ -594,6 +656,62 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        @endif
+
+        <!-- Main Transcript Content Body (Versi Lengkap: Alur Ucapan Lengkap) -->
+        @if($canViewTranscript && $transcriptSegments->isNotEmpty())
+            <div x-show="viewMode === 'lengkap'" style="display: none;" class="rounded-2xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-2xs space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <span>🎙️</span>
+                            <span>Transkripsi Lengkap: Rekaman Alur Ucapan</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Menampilkan alur ucapan langsung peserta rapat per waktu. Bebas kata filler & suara tawa, ungkapan bahasa daerah serta istilah bahasa Inggris tetap dipertahankan.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            @click="copyTranscript()"
+                            class="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition cursor-pointer"
+                        >
+                            <span x-show="!copiedTranscript">📋 Salin Transkrip Lengkap</span>
+                            <span x-show="copiedTranscript" x-cloak class="text-emerald-600 font-bold">✓ Tersalin ke Clipboard!</span>
+                        </button>
+
+                        <a
+                            href="{{ route('meetings.transcript.show', $meeting) }}"
+                            class="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-2xs hover:bg-indigo-700 transition"
+                        >
+                            <span>✏️ Buka Editor Transkrip</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Daftar Segmen Ucapan Lengkap -->
+                <div class="divide-y divide-slate-100">
+                    @foreach($transcriptSegments as $seg)
+                        <div class="py-3.5 space-y-1" data-minute-segment-text data-time="{{ $seg->getFormattedStartTime() }}">
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                <span class="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 font-mono font-semibold text-slate-700">
+                                    ⏱ {{ $seg->getFormattedStartTime() }} - {{ $seg->getFormattedEndTime() }}
+                                </span>
+                                @if($seg->isEdited())
+                                    <span class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                                        Diedit
+                                    </span>
+                                @endif
+                            </div>
+                            <p class="text-sm text-slate-900 leading-relaxed font-sans">
+                                {{ $seg->getEffectiveText() }}
+                            </p>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         @endif

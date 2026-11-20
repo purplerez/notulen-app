@@ -1,6 +1,9 @@
 <x-layouts.app :title="'Masuk - ' . config('app.name', 'Notulensi Rapat')" :narrow="true">
     <div class="space-y-6 pt-4">
-        <div class="text-center space-y-1">
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center justify-center mb-1">
+                <img src="/icons/icon.svg" alt="NotulenApp Logo" class="h-14 w-14 rounded-2xl shadow-md shadow-indigo-500/20" />
+            </div>
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">Masuk ke Akun</h1>
             <p class="text-sm text-slate-500">Masukkan email dan kata sandi organisasi Anda</p>
         </div>

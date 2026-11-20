@@ -10,6 +10,11 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
 
+    <!-- Favicon & PWA Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon.png">
+
     <!-- Script Pencegah Flash Tema (Auto Dark/Light Berdasarkan Waktu) -->
     <script>
         (function() {
@@ -83,9 +88,7 @@
         <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
             <!-- Brand Logo -->
             <a href="/" class="flex items-center gap-2.5 group">
-                <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white font-bold shadow-md shadow-indigo-500/20 transition group-hover:scale-105">
-                    N
-                </span>
+                <img src="/icons/icon.svg" alt="NotulenApp Logo" class="h-10 w-10 rounded-xl shadow-md shadow-indigo-500/20 transition group-hover:scale-105" />
                 <div class="flex flex-col">
                     <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                         Notulen<span class="text-indigo-600 dark:text-indigo-400">App</span>
@@ -192,6 +195,14 @@
         <section class="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-28">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto space-y-6">
+                    <!-- App Logo Icon Badge -->
+                    <div class="flex justify-center mb-2">
+                        <div class="relative group">
+                            <div class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-cyan-400 opacity-40 blur-md group-hover:opacity-75 transition duration-500"></div>
+                            <img src="/icons/icon.svg" alt="NotulenApp" class="relative h-16 w-16 sm:h-20 sm:w-20 rounded-2xl shadow-xl shadow-indigo-500/20 transition-transform duration-300 group-hover:scale-105" />
+                        </div>
+                    </div>
+
                     <!-- Status Badge -->
                     <div class="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-3.5 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm backdrop-blur dark:border-indigo-800/80 dark:bg-indigo-950/60 dark:text-indigo-300">
                         <span class="flex h-2 w-2 rounded-full bg-indigo-600 animate-ping"></span>
@@ -661,9 +672,7 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div class="flex items-center gap-3">
-                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm">
-                        N
-                    </span>
+                    <img src="/icons/icon.svg" alt="NotulenApp Logo" class="h-8 w-8 rounded-lg shadow-sm" />
                     <span class="text-base font-bold text-slate-900 dark:text-white">
                         Notulen<span class="text-indigo-600 dark:text-indigo-400">App</span>
                     </span>

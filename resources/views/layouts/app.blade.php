@@ -41,6 +41,7 @@
     <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+    <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon.png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -62,9 +63,7 @@
                 <!-- Brand Logo & Tenant Info -->
                 <div class="flex items-center gap-6">
                     <a href="{{ auth()->check() ? route('dashboard') : url('/') }}" class="flex items-center gap-2.5 group transition">
-                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 text-white font-black text-base shadow-sm shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                            N
-                        </span>
+                        <img src="/icons/icon.svg" alt="NotulenApp Logo" class="h-10 w-10 rounded-xl shadow-xs shadow-indigo-500/20 group-hover:scale-105 transition-transform" />
                         <div class="flex flex-col">
                             <span class="text-base font-bold tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors leading-none">
                                 Notulen<span class="text-indigo-600">App</span>

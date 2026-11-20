@@ -43,6 +43,11 @@ class TranscriptController extends Controller
         $stats = $meeting->getTranscriptStats();
         $canEdit = Gate::allows('updateTranscript', $meeting);
 
+        $latestMinute = $meeting->latestFinalMinute ?: $meeting->currentMinute;
+        if ($latestMinute) {
+            $latestMinute->load(['creator', 'actionItems']);
+        }
+
         return view('meetings.transcript', [
             'meeting' => $meeting,
             'segments' => $segments,
@@ -50,6 +55,7 @@ class TranscriptController extends Controller
             'canEdit' => $canEdit,
             'audioAvailable' => $audioAvailable,
             'audioStreamUrl' => $audioStreamUrl,
+            'latestMinute' => $latestMinute,
         ]);
     }
 

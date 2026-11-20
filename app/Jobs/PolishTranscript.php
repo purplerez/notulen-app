@@ -119,22 +119,35 @@ class PolishTranscript implements ShouldQueue
     /**
      * Build the LLM prompt for transcript cleaning.
      */
-    protected function buildPolishPrompt(string $rawText): string
+    public function buildPolishPrompt(string $rawText): string
     {
         return <<<PROMPT
 Anda adalah editor transkrip rapat profesional berbahasa Indonesia.
-Bersihkan transkrip rapat berikut dengan aturan ini:
+Tugas Anda adalah merapikan transkrip alur ucapan percakapan rapat menjadi teks transkrip lengkap yang bersih dengan aturan ketat berikut:
 
-1. Hapus kata atau suara filler yang tidak bermakna: "eh", "ehm", "hmm", "hm", "hehe",
-   "haha", "hihi", "anu", "ee", "eee", "eeh", "ya ya ya", "ya ya", "iya iya",
-   "gitu", "gitu loh", "gitu kan", "kayak gitu", "kan", "lah", "tuh", "deh",
-   "nah", "sih" — HANYA jika berdiri sendiri dan tidak punya makna dalam kalimat.
-2. Perbaiki tanda baca dan kapitalisasi awal kalimat.
-3. Gabungkan kalimat terpotong yang jelas bermakna sama menjadi satu kalimat utuh.
-4. JANGAN mengubah fakta, nama orang, nama tempat, angka, tanggal, atau keputusan apapun.
-5. JANGAN menambah informasi yang tidak ada di transkrip asli.
-6. Pertahankan jumlah baris (paragraf) yang sama dengan aslinya sebisa mungkin.
-7. Kembalikan HANYA teks yang sudah dibersihkan, tanpa penjelasan atau komentar apapun.
+1. HAPUS KATA FILLER & SUARA TAWA:
+   - Hilangkan kata atau suara filler tanpa makna: "hmmmm", "hmm", "hm", "ehm", "eh", "ee", "eee", "eeh", "anu".
+   - Hilangkan transkripsi suara tertawa: "hahahaha", "hahaha", "haha", "hehehe", "hehe", "hihi", "wkwk", "[tertawa]", "(tertawa)", "[laugh]".
+   - Hilangkan repetisi tanpa makna seperti: "ya ya ya", "iya iya iya".
+   - Hilangkan partikel filler ("gitu loh", "kayak gitu", "kan", "lah", "tuh", "deh", "nah", "sih") HANYA jika berdiri sendiri tanpa arti gramatikal dalam kalimat.
+
+2. PERTAHANKAN BAHASA CAMPURAN (BAHASA DAERAH & BAHASA INGGRIS):
+   - Peserta rapat sering menggunakan bahasa campuran seperti bahasa daerah (misalnya bahasa Jawa: monggo, sampun, matur nuwun, inggih, sae, nggih; bahasa Sunda: mangga, punten, dll) serta istilah atau ungkapan bahasa Inggris (misalnya: by the way, clear, on track, follow up, deadline, as soon as possible, dll).
+   - JANGAN menghapus, mengubah, atau menerjemahkan paksa ungkapan bahasa daerah dan bahasa Inggris tersebut! Pertahankan persis seperti ungkapan asli yang diucapkan penutur.
+
+3. PERTAHANKAN ALUR UCAPAN LENGKAP (BUKAN RINGKASAN):
+   - Pertahankan seluruh alur ucapan dan isi percakapan penutur per kalimat/dialog. JANGAN meringkas atau memotong poin pembicaraan. Ini adalah transkrip versi lengkap.
+
+4. PERBAIKI TATA TULIS:
+   - Perbaiki tanda baca (titik, koma, tanda tanya) dan kapitalisasi awal kalimat agar rapi dan mudah dibaca.
+   - Gabungkan kalimat terpotong yang jelas bermakna sama menjadi satu kalimat utuh.
+
+5. INTEGRITAS FAKTA:
+   - JANGAN mengubah fakta, nama orang, angka, persentase, tanggal, nama lembaga, atau keputusan apapun.
+   - JANGAN menambah informasi yang tidak ada di transkrip asli.
+   - Pertahankan jumlah baris/paragraf yang sama dengan aslinya sebisa mungkin.
+
+Kembalikan HANYA teks transkrip lengkap yang sudah dibersihkan, tanpa penjelasan atau komentar apapun.
 
 Transkrip mentah:
 {$rawText}
